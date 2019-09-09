@@ -1,0 +1,7 @@
+﻿Index,Type,Context,Scene,Role,RolePic,RolePos,RoleAudio
+1,Dialog,First，Hello,bg1,Fat,Fat2,Left,aya0001
+2,Dialog,Second，Yes,bg0,Big,Big1,Right,aya0002
+3,Fight,,bg2,Big,Big0/Small0,Right/Left,aya0003
+4,Option,GOGOGOGO/NONONONO,1/2,,,,
+5,Dialog,TurnTo5,bg0,Big,Big1,Left,aya0002
+6,Dialog,TurnTo6,bg0,Big,Big2,Center,aya0002
