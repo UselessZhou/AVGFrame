@@ -1,17 +1,1 @@
-[
-	{
-	"savedDataIndex": 0,
-	"sceneIndex": 20,
-	"savedTime": "2016/5/9 13:09:55"
-	},
-	{
-	"savedDataIndex": 2,
-	"sceneIndex": 130,
-	"savedTime": "2019/2/11 15:22:51"
-	},  
-	{
-	"savedDataIndex": 3,
-	"sceneIndex": 5,
-	"savedTime": "2019/9/8 22:33:55"
-	}
-]
+﻿[{"savedDataIndex":0,"sceneIndex":3,"savedTime":"2019-09-10T22:56:19.2703655+08:00","savedPicName":"savedImage3"},{"savedDataIndex":1,"sceneIndex":2,"savedTime":"2019-09-10T22:51:22.8918997+08:00","savedPicName":"savedImage3"},{"savedDataIndex":2,"sceneIndex":2,"savedTime":"2019-09-10T22:51:24.763962+08:00","savedPicName":"savedImage3"},null,null,null,null,null,null,null]

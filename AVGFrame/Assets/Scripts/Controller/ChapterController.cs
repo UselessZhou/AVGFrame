@@ -11,8 +11,8 @@ using System;
 
 public class ChapterController : MonoBehaviour
 {
-
     public static ChapterController _instance;
+    
     public GameObject background;
     public GameObject rolesContainer;
     public GameObject lineContainer;
@@ -25,7 +25,7 @@ public class ChapterController : MonoBehaviour
 
    // private TextAsset mainScenarioTA;
     private string[][] dialogArray; //剧本的二维数组
-    private int dialogIndex;        //剧本的索引
+    public int dialogIndex;        //剧本的索引
 
     private Text line;          //对话
     private Text roleName;      //角色名称
@@ -37,6 +37,9 @@ public class ChapterController : MonoBehaviour
     private GameObject leftRolePic;
     private GameObject centerRolePic;
     private GameObject rightRolePic;
+
+    public string screenPicName;
+    public bool isSavedData;
 
     private bool showNextDialog; //显示下一个对话
 
@@ -57,11 +60,14 @@ public class ChapterController : MonoBehaviour
         rightRolePic = rightRole.transform.Find("RightRolePic").gameObject;
         centerRolePic = centerRole.transform.Find("CenterRolePic").gameObject;
 
+        screenPicName = SetScreenPicName();
+
         LoadCSVFile();
     }
 
     private void Awake()
     {
+        _instance = this;
         dialogIndex = 1;
         rootPath = Application.dataPath;
         linePath = rootPath + "/Scripts/Line/";
@@ -72,46 +78,8 @@ public class ChapterController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //if (showNextDialog)
-        //{
-        //    GetNextDialog();
-        //}
+
     }
-
-    //private List<SceneAction> LoadSceneAction()
-    //{
-
-    //    if (!Directory.Exists(linePath))
-    //    {
-    //        Directory.CreateDirectory(linePath);
-    //    }
-    //    //使用using可在结束后销毁using括号内生成的资源变量
-    //    using (FileStream fs = new FileStream(linePath + lineFile, FileMode.OpenOrCreate)) //文件不存在直接创建
-    //    {
-    //        //读取文件内的所以内容，转换为SavedDataModel
-    //        using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
-    //        {
-    //            string lineDataJson = sr.ReadToEnd();
-    //            if (null == sceneActions) sceneActions = new List<SceneAction>();
-    //            if (!string.IsNullOrEmpty(lineDataJson))
-    //            {
-    //                JArray lineDataArray = JArray.Parse(lineDataJson);
-    //                foreach (JToken jLinedData in lineDataArray)    //JToken为JObject的基类，用来遍历较好
-    //                {
-    //                    if (null != jLinedData && jLinedData.Type != JTokenType.Null)
-    //                    {
-    //                        SceneAction lineData = JsonConvert.DeserializeObject<SceneAction>(jLinedData.ToString());//反序列化Json
-    //                        sceneActions.Add(lineData);
-    //                    }
-    //                }
-    //                Debug.Log(sceneActions[0].sceneIndex);
-    //                return sceneActions;
-    //            }
-
-    //        }
-    //    }
-    //    return new List<SceneAction>();
-    //}
 
     private void LoadCSVFile()
     {
@@ -126,20 +94,20 @@ public class ChapterController : MonoBehaviour
 
     public void GetNextDialog()
     {
-        ScreenCapture.CaptureScreenshot(Application.streamingAssetsPath + "/ScreenShot.png");
+        GameController._instance.hideContainers();
+        rolesContainer.SetActive(true);
+        isSavedData = true;
 
         if (dialogArray[dialogIndex].Length == 8 && dialogIndex < dialogArray.Length)
         {
             string dialogType = dialogArray[dialogIndex][1];
-            if (dialogType.Equals("Dialog"))
+            if (dialogType.Equals("Dialog") || dialogType.Equals("Fight"))
             {
                 SetDialogDetail();
             }else if (dialogType.Equals("Option"))
             {
                 SetOptionMenu();
             }
-            
-
             dialogIndex++;
         }
     }
@@ -158,7 +126,7 @@ public class ChapterController : MonoBehaviour
         string[] rolePosArray = dialogArray[dialogIndex][6].Split('/');
 
         line.text = dialogContext;
-        background.GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene);
+        background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene);
         background.SetActive(true);
         roleName.text = dialogRole;
         leftRolePic.SetActive(false);
@@ -188,6 +156,8 @@ public class ChapterController : MonoBehaviour
         AudioClip voice = (AudioClip)Resources.Load("Audio/" + dialogAudio);
         cvAudioSource.clip = voice;
         cvAudioSource.Play();
+
+        CaptureScreen();//由于在saveBtn上做截屏的调用只能截取save页面的屏幕，暂时就每次加载dialog的时候都截取一张。
     }
 
     //显示游戏选项层
@@ -208,12 +178,14 @@ public class ChapterController : MonoBehaviour
         {
             dialogIndex = Convert.ToInt32(slipIndex[0]);
             SetDialogDetail();
+            dialogIndex++;
         });
 
         BtnTwo.onClick.AddListener(delegate ()
         {
             dialogIndex = Convert.ToInt32(slipIndex[1]);
             SetDialogDetail();
+            dialogIndex++;
         });
     }
 
@@ -229,15 +201,47 @@ public class ChapterController : MonoBehaviour
     /// </summary>
     /// <param name="rect"></param>
     /// <returns></returns>
-    public void CaptureScreen(Rect rect)
+    public void CaptureScreen()
     {
         //yield return new WaitForSeconds(0.1F);
         //yield return new WaitForEndOfFrame();
-        Texture2D screenShot = new Texture2D((int)rect.width, (int)rect.height, TextureFormat.RGB24, false);
-        screenShot.ReadPixels(rect, 0, 0);
-        screenShot.Apply();
-        byte[] bytes = screenShot.EncodeToPNG();
-        string filename = Application.dataPath + "/ScreenShot.png";
-        System.IO.File.WriteAllBytes(filename, bytes);
+        //Texture2D screenShot = new Texture2D((int)rect.width, (int)rect.height, TextureFormat.RGB24, false);
+        //screenShot.ReadPixels(rect, 0, 0);
+        //screenShot.Apply();
+        //byte[] bytes = screenShot.EncodeToPNG();
+        //string filename = Application.dataPath + "/ScreenShot.png";
+        //System.IO.File.WriteAllBytes(filename, bytes);
+
+
+        //ScreenCapture.CaptureScreenshot(rootPath + "/Resources/SavedData/" + screenPicName + ".png");//截取屏幕快照，以作存档图片
+    }
+
+    public SavedDataModel GetCurrentData()
+    {
+        SavedDataModel tmpData = new SavedDataModel();
+        tmpData.sceneIndex = dialogIndex - 1;
+        tmpData.savedTime = DateTime.Now;
+        return tmpData;
+    }
+
+    public string SetScreenPicName()
+    {
+        DirectoryInfo folder = new DirectoryInfo(rootPath + "/Resources/SavedData/");
+        bool foundPic;
+        for(int i=0; i<=10; i++)
+        {
+            foundPic = false;
+            string tmpPicName = string.Format("savedImage{0}", i);
+            foreach (FileInfo file in folder.GetFiles("*.png"))
+            {
+                if (file.Name == tmpPicName + ".png")
+                {
+                    foundPic = true;
+                    break;
+                }
+            }
+            if (!foundPic) return tmpPicName;
+        }
+        return null;//发现所有的命名规则都已被占用，有问题。
     }
 }

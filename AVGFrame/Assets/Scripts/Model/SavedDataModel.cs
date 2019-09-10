@@ -14,6 +14,7 @@ namespace Asserts.Scripts.Model
         public int savedDataIndex;  //存储序号
         public int sceneIndex;      //跳转幕的序号
         public DateTime savedTime;
+        public string savedPicName; //存储关联的截图png文件名
     }
 }
 
