@@ -8,6 +8,8 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using UnityEngine.UI;
 using System;
+using Excel;
+using System.Data;
 
 public class ChapterController : MonoBehaviour
 {
@@ -20,14 +22,15 @@ public class ChapterController : MonoBehaviour
     public GameObject optionPanel;
 
     private static string rootPath; //根目录
-    private static string linePath; //剧本目录
-    private static string lineFile; //剧本文件名
+    private static string chapterPath; //剧本目录
+    private static string chapterFile; //剧本文件名
 
    // private TextAsset mainScenarioTA;
     private string[][] dialogArray; //剧本的二维数组
     public int dialogIndex;        //剧本的索引
 
     private Text line;          //对话
+    private string lineText;    //具体内容
     private Text roleName;      //角色名称
 
     private GameObject rightRole;   //右侧角色
@@ -41,17 +44,26 @@ public class ChapterController : MonoBehaviour
     public string screenPicName;
     public bool isSavedData;
 
-    private bool showNextDialog; //显示下一个对话
-
-    private AudioClip cvAudio;
+    //private AudioClip cvAudio;
     public AudioSource cvAudioSource;
+
+    //private AudioClip bgvAudio;
+    public AudioSource bgvAudioSource;
+
+    private char[] ca;
+    private bool showLineTexting;
+
+    private bool isAutoPlay;    //是否自动播放
+
+    private bool isSkipDialog;  //是否快速跳过对话
+    
+    public float dialogSpeed;  //文本显示速度
 
     // Start is called before the first frame update
     void Start()
     {
         line = lineContainer.transform.Find("Line").GetComponent<Text>();
         roleName = lineContainer.transform.Find("RoleName").GetComponent<Text>();
-        showNextDialog = true;
         rightRole = rolesContainer.transform.Find("RightRole").gameObject;
         centerRole = rolesContainer.transform.Find("CenterRole").gameObject;
         leftRole = rolesContainer.transform.Find("LeftRole").gameObject;
@@ -62,7 +74,7 @@ public class ChapterController : MonoBehaviour
 
         screenPicName = SetScreenPicName();
 
-        LoadCSVFile();
+        LoadXlsFile(0);//首先进入序章
     }
 
     private void Awake()
@@ -70,17 +82,36 @@ public class ChapterController : MonoBehaviour
         _instance = this;
         dialogIndex = 1;
         rootPath = Application.dataPath;
-        linePath = rootPath + "/Scripts/Line/";
-        lineFile = "line.txt";
+        chapterPath = rootPath + "/Resources/Chapter/";
+        chapterFile = "chapter.xlsx";
+        dialogSpeed = 0.05f;
 
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (isAutoPlay)
+        {
+            if(!cvAudioSource.isPlaying && !showLineTexting)
+            AutoPlay();
+        }
 
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            Debug.Log("按下");
+            isSkipDialog = false;
+            SetSkipValue();
+        }
+        if (Input.GetKeyUp(KeyCode.LeftControl))
+        {
+            Debug.Log("弹起");
+            isSkipDialog = true;
+            SetSkipValue();
+        }
     }
 
+    //弃用，CSV无法一个文件以sheet来分章节
     private void LoadCSVFile()
     {
         TextAsset lineTextAsset = (TextAsset)Resources.Load("Line/dialog") as TextAsset;
@@ -92,12 +123,51 @@ public class ChapterController : MonoBehaviour
         }
     }
 
+    //按照章节读取剧本
+    private void LoadXlsFile(int chapterNum)
+    {
+        FileStream fileStream = File.Open(chapterPath + chapterFile, FileMode.Open, FileAccess.Read);
+        IExcelDataReader excelDataReader = ExcelReaderFactory.CreateOpenXmlReader(fileStream);
+        DataSet result = excelDataReader.AsDataSet();
+        
+        int columns = result.Tables[chapterNum].Columns.Count;
+        int rows = result.Tables[chapterNum].Rows.Count;
+
+        dialogArray = new string[rows][];
+
+        for (int i = 0; i < rows; i++)
+        {
+            string[] value = new string[columns];
+            for (int j = 0; j < columns; j++)
+            {
+                value[j] = result.Tables[chapterNum].Rows[i][j].ToString();
+            }
+            dialogArray[i] = value;
+        }
+    }
+
     public void GetNextDialog()
     {
+        //如果正在协程显示文字，直接关闭协程。
+        if (showLineTexting)
+        {
+            StopCoroutine("ShowLineCoroutine");
+            showLineTexting = false;
+            line.text = lineText;
+            return;
+        }
+        //暂时强制让BGV听完再能显示下一个dialog
+        if (bgvAudioSource.isPlaying)
+        {
+            isAutoPlay = false;
+            isSkipDialog = false;
+            return;
+        }
         GameController._instance.hideContainers();
         rolesContainer.SetActive(true);
         isSavedData = true;
 
+        cvAudioSource.Stop();
         if (dialogArray[dialogIndex].Length == 8 && dialogIndex < dialogArray.Length)
         {
             string dialogType = dialogArray[dialogIndex][1];
@@ -106,7 +176,12 @@ public class ChapterController : MonoBehaviour
                 SetDialogDetail();
             }else if (dialogType.Equals("Option"))
             {
+                isAutoPlay = false;
+                isSkipDialog = false;
                 SetOptionMenu();
+            }else if (dialogType.Equals("BGV"))
+            {
+                PlayBGVAudio();
             }
             dialogIndex++;
         }
@@ -125,7 +200,8 @@ public class ChapterController : MonoBehaviour
         string[] rolePicArray = dialogArray[dialogIndex][5].Split('/');
         string[] rolePosArray = dialogArray[dialogIndex][6].Split('/');
 
-        line.text = dialogContext;
+        lineText = dialogContext;
+        ShowLine();
         background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene);
         background.SetActive(true);
         roleName.text = dialogRole;
@@ -157,7 +233,7 @@ public class ChapterController : MonoBehaviour
         cvAudioSource.clip = voice;
         cvAudioSource.Play();
 
-        CaptureScreen();//由于在saveBtn上做截屏的调用只能截取save页面的屏幕，暂时就每次加载dialog的时候都截取一张。
+        //CaptureScreen();//由于在saveBtn上做截屏的调用只能截取save页面的屏幕，暂时就每次加载dialog的时候都截取一张。
     }
 
     //显示游戏选项层
@@ -165,6 +241,7 @@ public class ChapterController : MonoBehaviour
     {
         //TODO:由于选项的个数并不固定，应该需要动态生成Button
         lineContainer.SetActive(false);
+        rolesContainer.SetActive(false);
         optionPanel.SetActive(true);
         string[] optionContexts = dialogArray[dialogIndex][2].Split('/');
         string[] slipIndex = dialogArray[dialogIndex][3].Split('/');
@@ -189,9 +266,22 @@ public class ChapterController : MonoBehaviour
         });
     }
 
-    public void SkipToAssignDialog()
+    private void PlayBGVAudio()
     {
 
+        string bgvAudio = dialogArray[dialogIndex][7];
+        isAutoPlay = false;
+        isSkipDialog = false;
+        AudioClip bgv = (AudioClip)Resources.Load("BGV/" + bgvAudio);
+        bgvAudioSource.clip = bgv;
+        bgvAudioSource.Play();
+        rolesContainer.SetActive(false);
+        line.text = "";
+        roleName.text = "";
+        lineContainer.SetActive(true);
+        string dialogScene = dialogArray[dialogIndex][3];
+        background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene);
+        background.SetActive(true);
     }
 
     /// <summary>
@@ -244,4 +334,75 @@ public class ChapterController : MonoBehaviour
         }
         return null;//发现所有的命名规则都已被占用，有问题。
     }
+
+    //跳过序章的按钮
+    public void SkipChapter()
+    {
+        LoadXlsFile(1);
+        dialogIndex = 1;
+        GetNextDialog();
+    }
+
+    //协程逐字显示对话文本
+    public void ShowLine()
+    {
+        StopCoroutine("ShowLineCoroutine");
+        StartCoroutine("ShowLineCoroutine");
+    }
+    IEnumerator ShowLineCoroutine()
+    {
+        ca = lineText.ToCharArray();
+        showLineTexting = true;
+        string tempText = "";
+        for (int i = 0; i < ca.Length; i++)
+        {
+
+            tempText += ca[i];
+            line.text = tempText;
+            yield return new WaitForSeconds(dialogSpeed);
+
+        }
+        showLineTexting = false;
+    }
+
+    //自动播放
+    private void AutoPlay()
+    {
+        GetNextDialog();
+    }
+
+    public void SetAutoPlayValue()
+    {
+        isAutoPlay = !isAutoPlay;
+    }
+
+    public void SetSkipValue()
+    {
+        isSkipDialog = !isSkipDialog;
+        if (isSkipDialog)
+        {
+            StartCoroutine("SkipDialogs");
+        }
+        else
+        {
+            StopCoroutine("SkipDialogs");
+        }
+    }
+
+
+    //Skip快速跳过文本
+    IEnumerator SkipDialogs()
+    {
+        while (isSkipDialog)
+        {
+            GetNextDialog();
+            yield return new WaitForSeconds(0.05f);
+        }
+    }
+
+    public void ShowCGMode()
+    {
+
+    }
+
 }

@@ -62,8 +62,10 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Controller\ChapterController.cs" />
     <Compile Include="Assets\Scripts\Controller\GameController.cs" />
+    <Compile Include="Assets\Scripts\Controller\SettingController.cs" />
     <Compile Include="Assets\Scripts\Model\RoleModel.cs" />
     <Compile Include="Assets\Scripts\Model\SavedDataModel.cs" />
+    <Compile Include="Assets\Scripts\Model\SettingModel.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>E:/GitHub/AVGFrame/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
@@ -279,6 +281,12 @@
     </Reference>
     <Reference Include="UnityEngine.SpatialTracking">
       <HintPath>E:/DevelopTools/Unity/Editor/Data/UnityExtensions/Unity/UnitySpatialTracking/RuntimeEditor/UnityEngine.SpatialTracking.dll</HintPath>
+    </Reference>
+    <Reference Include="Excel">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugins/Excel.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugins/ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>E:/GitHub/AVGFrame/Assets/Plugins/Newtonsoft.Json.dll</HintPath>

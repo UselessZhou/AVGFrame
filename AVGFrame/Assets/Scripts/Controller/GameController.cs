@@ -34,6 +34,23 @@ public class GameController : MonoBehaviour
     private SavedDataModel qSavedData;
     private static string qSavedDataFile;
 
+    //跳过序章Container
+    private GameObject skipContainer;
+    private SettingModel settingDatas;
+    private static string settingDataFile;
+
+    private GameObject extraContainer;
+
+    //CGMode
+    private GameObject cgPanel;
+    private GameObject cgDetail;
+    private Button fullCGBtn;
+    private Button zeroCGBtn;
+
+    private GameObject bgmPanel;
+
+    private GameObject settingPannel;
+
     private void Awake()
     {
         _instance = this;
@@ -47,11 +64,23 @@ public class GameController : MonoBehaviour
         savedDatasPath = rootPath + "/Resources/SavedData/";
         savedDatasFile = "savedData.json";
         qSavedDataFile = "quickSavedData.json";
+        settingDataFile = "settingData.json";
         titleContainer = displayCanvas.transform.Find("TitleContainer").gameObject;
         savedDataPanel = displayCanvas.transform.Find("SavedDataPanel").gameObject;
+        skipContainer = displayCanvas.transform.Find("SkipContainer").gameObject;
+        extraContainer = displayCanvas.transform.Find("ExtraContainer").gameObject;
 
+        cgPanel = displayCanvas.transform.Find("CGPanel").gameObject;
+        cgDetail = displayCanvas.transform.Find("CGDetail").gameObject;
+        fullCGBtn = extraContainer.transform.Find("FullCG").GetComponent<Button>();
+        zeroCGBtn = extraContainer.transform.Find("ZeroCG").GetComponent<Button>();
+
+        bgmPanel = displayCanvas.transform.Find("BGMPanel").gameObject;
+
+        settingPannel = displayCanvas.transform.Find("SettingPanel").gameObject;
         LoadSavedDatas();
         LoadQuickSaveData();
+        LoadSettingDatas();
     }
 
     // Update is called once per frame
@@ -70,6 +99,7 @@ public class GameController : MonoBehaviour
                 File.Delete(savedDatasPath + ChapterController._instance.screenPicName + ".png");
             }
         }
+        ExitSettingPannel();
     }
 
     public void GoToTitle()
@@ -83,7 +113,8 @@ public class GameController : MonoBehaviour
     {
         titleContainer.SetActive(false);
         logo.SetActive(false);
-        ChapterController._instance.lineContainer.SetActive(true);
+        //ChapterController._instance.lineContainer.SetActive(true);
+        skipContainer.SetActive(true);
     }
 
     /// <summary>
@@ -153,6 +184,53 @@ public class GameController : MonoBehaviour
             }
         }
         return qSavedData = new SavedDataModel();
+    }
+
+    //配置文件的读取,先直接复制黏贴， 之后应该抽象一下
+    private SavedDataModel LoadSettingDatas()
+    {
+        if (!Directory.Exists(savedDatasPath))
+        {
+            Directory.CreateDirectory(savedDatasPath);
+        }
+        //使用using可在结束后销毁using括号内生成的资源变量
+        using (FileStream fs = new FileStream(savedDatasPath + settingDataFile, FileMode.OpenOrCreate)) //文件不存在直接创建
+        {
+            //读取文件内的所以内容，转换为SavedDataModel
+            using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
+            {
+                string settingDataJson = sr.ReadToEnd();
+                if (null == settingDatas) settingDatas = new SettingModel();
+                if (!string.IsNullOrEmpty(settingDataJson))
+                {
+                    JToken jSettingData = JToken.Parse(settingDataJson);
+                    if (null != jSettingData && jSettingData.Type != JTokenType.Null)
+                    {
+                        SettingModel settingData = JsonConvert.DeserializeObject<SettingModel>(jSettingData.ToString());//反序列化Json
+                        settingDatas = settingData;
+                    }
+                    return qSavedData;
+                }
+
+            }
+        }
+        return qSavedData = new SavedDataModel();
+    }
+
+    /// <summary>
+    /// 将存储数据存入本地
+    /// </summary>
+    public void SaveSettingDatas()
+    {
+        if (!Directory.Exists(savedDatasPath))
+        {
+            Directory.CreateDirectory(savedDatasPath);
+        }
+        using (StreamWriter w = new StreamWriter(savedDatasPath + settingDataFile, false, Encoding.UTF8))
+        {
+            string settingDataJson = JsonConvert.SerializeObject(settingDatas);
+            w.Write(settingDataJson);
+        }
     }
 
     public List<T> InitList<T>(int size)
@@ -309,5 +387,111 @@ public class GameController : MonoBehaviour
             ChapterController._instance.dialogIndex = sceneIndex;
             ChapterController._instance.GetNextDialog();
         }
+    }
+
+    public void ClosePanel()
+    {
+        savedDataPanel.SetActive(false);
+    }
+
+    public void LinkBtn()
+    {
+        Application.OpenURL("www.baidu.com");
+    }
+
+
+    public void ShowExtraPanel()
+    {
+        extraContainer.SetActive(true);
+    }
+
+     public void ShowCGPanel()
+    {
+        cgPanel.SetActive(true);
+        int showNum = settingDatas.cgIndex;
+        int totalNum = 9;
+        //int showNum = 5;
+        for (int i = 1; i <= totalNum; i++)
+        {
+            Button cgBtn = cgPanel.transform.Find(string.Format("CG{0}", i)).GetComponent<Button>();
+            if (i <= showNum)
+            {
+                cgBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("Image/Mode/CG/ev{0}", i));
+                cgBtn.onClick.AddListener(delegate ()
+                {
+                    cgDetail.SetActive(true);
+                    Button detailBtn = cgDetail.transform.Find("Detail").GetComponent<Button>();
+                    detailBtn.GetComponent<Image>().sprite = cgBtn.GetComponent<Image>().sprite;
+                });
+            }
+            else
+            {
+                cgBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/Mode/CG/cgno");
+            }
+        }
+    }
+
+    public void CloseCGDetail()
+    {
+        cgDetail.SetActive(false);
+    }
+
+    public void ShowFullCG()
+    {
+        settingDatas.cgIndex = 9;
+        SaveSettingDatas();
+    }
+
+    public void ShowZeroCG()
+    {
+        settingDatas.cgIndex = 0;
+        SaveSettingDatas();
+    }
+
+    public void ExitBtn()
+    {
+        cgPanel.SetActive(false);
+    }
+
+    public void ShowBGMPanel()
+    {
+        bgmPanel.SetActive(true);
+
+    }
+
+    public void ExitBGMPanelBtn()
+    {
+        bgmPanel.SetActive(false);
+    }
+
+    public void PlayBGMBtn(string bgmName)
+    {
+        AudioSource bgmSource = bgmPanel.transform.Find("BGM").GetComponent<AudioSource>();
+        AudioClip bgm = (AudioClip)Resources.Load("BGM/" + bgmName);
+        bgmSource.clip = bgm;
+        bgmSource.Play();
+    }
+
+    public void StopBGMBtn()
+    {
+        AudioSource bgmSource = bgmPanel.transform.Find("BGM").GetComponent<AudioSource>();
+        bgmSource.Stop();
+    }
+
+    public void ShowSettingPanel()
+    {
+        settingPannel.SetActive(true);
+        settingPannel.transform.Find("BGM").GetComponent<Slider>().value = settingDatas.BGMVolume;
+        settingPannel.transform.Find("Voice").GetComponent<Slider>().value = settingDatas.VoiceVolume;
+        settingPannel.transform.Find("DialogSpeed").GetComponent<Slider>().value = settingDatas.dialogSpeed;
+    }
+
+    public void ExitSettingPannel()
+    {
+        settingPannel.SetActive(false);
+        settingDatas.BGMVolume = ChapterController._instance.bgvAudioSource.volume;
+        settingDatas.VoiceVolume = ChapterController._instance.cvAudioSource.volume;
+        settingDatas.dialogSpeed = 0.35f - ChapterController._instance.dialogSpeed;
+        SaveSettingDatas();
     }
 }
