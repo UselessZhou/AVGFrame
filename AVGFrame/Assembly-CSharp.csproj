@@ -283,13 +283,31 @@
       <HintPath>E:/DevelopTools/Unity/Editor/Data/UnityExtensions/Unity/UnitySpatialTracking/RuntimeEditor/UnityEngine.SpatialTracking.dll</HintPath>
     </Reference>
     <Reference Include="Excel">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugins/Excel.dll</HintPath>
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/Excel.dll</HintPath>
+    </Reference>
+    <Reference Include="I18N.CJK">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.CJK.dll</HintPath>
+    </Reference>
+    <Reference Include="I18N">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.dll</HintPath>
+    </Reference>
+    <Reference Include="I18N.MidEast">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.MidEast.dll</HintPath>
+    </Reference>
+    <Reference Include="I18N.Other">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.Other.dll</HintPath>
+    </Reference>
+    <Reference Include="I18N.Rare">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.Rare.dll</HintPath>
+    </Reference>
+    <Reference Include="I18N.West">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.West.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugins/ICSharpCode.SharpZipLib.dll</HintPath>
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugins/Newtonsoft.Json.dll</HintPath>
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.Editor">
       <HintPath>E:/GitHub/AVGFrame/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Editor.dll</HintPath>

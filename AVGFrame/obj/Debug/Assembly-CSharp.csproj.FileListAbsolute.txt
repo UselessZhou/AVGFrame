@@ -566,3 +566,9 @@ E:\GitHub\AVGFrame\obj\Debug\Assembly-CSharp.dll
 E:\GitHub\AVGFrame\obj\Debug\Assembly-CSharp.pdb
 E:\GitHub\AVGFrame\Temp\bin\Debug\Excel.dll
 E:\GitHub\AVGFrame\Temp\bin\Debug\ICSharpCode.SharpZipLib.dll
+E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.CJK.dll
+E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.dll
+E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.MidEast.dll
+E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.Other.dll
+E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.Rare.dll
+E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.West.dll

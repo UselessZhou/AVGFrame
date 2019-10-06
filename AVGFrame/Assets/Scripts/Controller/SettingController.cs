@@ -6,14 +6,15 @@ using UnityEngine.UI;
 public class SettingController : MonoBehaviour
 {
     public static SettingController _isntance;
-    public GameObject Bgm, Voice;
-    public Slider BgmSlider, VoiceSlider, DialogSpeedSlider;
+    public GameObject Bgm, Bgv, Voice;
+    public Slider BgmSlider, BgvSlider, VoiceSlider, DialogSpeedSlider, SkipSpeedSlider;
     // Use this for initialization
     void Awake()
     {
         _isntance = this;
-        Bgm = GameObject.Find("BGVAudio");
+        Bgm = GameObject.Find("BGMAudio");
         Voice = GameObject.Find("CVAudio");
+        Bgv = GameObject.Find("BGVAudio");
     }
 
 
@@ -23,13 +24,25 @@ public class SettingController : MonoBehaviour
         Bgm.GetComponent<AudioSource>().volume = BgmSlider.value;
         Debug.Log(BgmSlider.value);
     }
+
     public void ChangeVoiceVolume()
     {
         Voice.GetComponent<AudioSource>().volume = VoiceSlider.value;
     }
+
     public void ChangeDialogSpeed()
     {
         ChapterController._instance.dialogSpeed = 0.35f - DialogSpeedSlider.value;
-        Debug.Log(ChapterController._instance.dialogSpeed);
+    }
+
+    public void ChangeSkipSpeed()
+    {
+        ChapterController._instance.skipSpeed = 0.35f - SkipSpeedSlider.value;
+    }
+
+    public void ChangeBgvVolume()
+    {
+        Bgv.GetComponent<AudioSource>().volume = BgvSlider.value;
+        Debug.Log(BgvSlider.value);
     }
 }

@@ -21,7 +21,8 @@ public class GameController : MonoBehaviour
     public GameObject displayCanvas; //获取displayCanvas
     public GameObject logo; //Logo页面显示
     public Image bg;   //Title背景图片
-    private GameObject titleContainer;
+    public GameObject titleContainer;
+    public AudioSource titleAudioSource;
 
     //save页面
     public GameObject savedDataPanel;
@@ -36,7 +37,7 @@ public class GameController : MonoBehaviour
 
     //跳过序章Container
     private GameObject skipContainer;
-    private SettingModel settingDatas;
+    public SettingModel settingDatas;
     private static string settingDataFile;
 
     private GameObject extraContainer;
@@ -46,8 +47,13 @@ public class GameController : MonoBehaviour
     private GameObject cgDetail;
     private Button fullCGBtn;
     private Button zeroCGBtn;
+    private GameObject confirmPanel;
 
     private GameObject bgmPanel;
+
+    public GameObject memoryPanel;
+    private int[] memoryStartArray;
+    private int[] memoryEndArray;
 
     private GameObject settingPannel;
 
@@ -74,13 +80,19 @@ public class GameController : MonoBehaviour
         cgDetail = displayCanvas.transform.Find("CGDetail").gameObject;
         fullCGBtn = extraContainer.transform.Find("FullCG").GetComponent<Button>();
         zeroCGBtn = extraContainer.transform.Find("ZeroCG").GetComponent<Button>();
+        confirmPanel = extraContainer.transform.Find("ConfirmPanel").gameObject;
 
         bgmPanel = displayCanvas.transform.Find("BGMPanel").gameObject;
+
+        memoryPanel = displayCanvas.transform.Find("MemoryPanel").gameObject;
+        memoryStartArray = new int[] { 28, 44 };
+        memoryEndArray = new int[] { 42, 65 };
 
         settingPannel = displayCanvas.transform.Find("SettingPanel").gameObject;
         LoadSavedDatas();
         LoadQuickSaveData();
         LoadSettingDatas();
+        ChapterController._instance.noClothes = settingDatas.noClothes;//先要读取是否着装的设置
     }
 
     // Update is called once per frame
@@ -92,13 +104,13 @@ public class GameController : MonoBehaviour
     private void OnApplicationQuit()
     {
         //如果未做过存档，删除截屏时保留的png
-        if (!ChapterController._instance.isSavedData)
-        {
-            if (File.Exists(savedDatasPath + ChapterController._instance.screenPicName + ".png"))
-            {
-                File.Delete(savedDatasPath + ChapterController._instance.screenPicName + ".png");
-            }
-        }
+        //if (!ChapterController._instance.isSavedData)
+        //{
+        //    if (File.Exists(savedDatasPath + ChapterController._instance.screenPicName + ".png"))
+        //    {
+        //        File.Delete(savedDatasPath + ChapterController._instance.screenPicName + ".png");
+        //    }
+        //}
         ExitSettingPannel();
     }
 
@@ -107,11 +119,15 @@ public class GameController : MonoBehaviour
         logo.gameObject.SetActive(false);
         //bg.gameObject.SetActive(true);
         titleContainer.SetActive(true);
+        //AudioClip bgv = (AudioClip)Resources.Load("BGM/bgmTitle");
+        //titleAudioSource.clip = bgv;
+        //titleAudioSource.Play();
     }
 
     public void NewGame()
     {
         titleContainer.SetActive(false);
+        titleAudioSource.Stop();
         logo.SetActive(false);
         //ChapterController._instance.lineContainer.SetActive(true);
         skipContainer.SetActive(true);
@@ -248,6 +264,7 @@ public class GameController : MonoBehaviour
 
     public void ShowSavedDataPanel(bool isLoadBtn)
     {
+        titleAudioSource.Stop();
         isLoadPanel = isLoadBtn;
 
         //隐藏一些页面，之后应该做成方法
@@ -287,6 +304,10 @@ public class GameController : MonoBehaviour
             if (null != savedDatas[savedDataIndex])
             {
                 int sceneIndex = savedDatas[savedDataIndex].sceneIndex;
+                int chapterIndex = savedDatas[savedDataIndex].chapterIndex;
+                ChapterController._instance.bgmAudioSource.Stop();
+                ChapterController._instance.bgvAudioSource.Stop();
+                ChapterController._instance.LoadXlsFile(chapterIndex);
                 ChapterController._instance.dialogIndex = sceneIndex;
                 ChapterController._instance.GetNextDialog();
             }
@@ -294,7 +315,7 @@ public class GameController : MonoBehaviour
         else
         {
             //这串逻辑为当按下存档按钮时的操作，由于之前截屏图片通过改名后关联到Btn不能立即显示
-            if(null != savedDatas[savedDataIndex])
+            if (null != savedDatas[savedDataIndex])
             {
                 string tmpPicName = savedDatas[savedDataIndex].savedPicName;
                 if (File.Exists(savedDatasPath + tmpPicName))
@@ -309,8 +330,16 @@ public class GameController : MonoBehaviour
             savedDatas[savedDataIndex] = ChapterController._instance.GetCurrentData();
             savedDatas[savedDataIndex].savedDataIndex = savedDataIndex;
             savedDatas[savedDataIndex].savedPicName = ChapterController._instance.screenPicName;
+            savedDatas[savedDataIndex].chapterIndex = ChapterController._instance.chapterIndex;
             SaveDatas(savedDataIndex);
-
+            //在save的时候存储最新的文本序列号。1.章节号大于setting，2.章节相同，dialogIndex大于setting
+            if ((ChapterController._instance.chapterIndex > settingDatas.chapterIndex) || 
+                ((ChapterController._instance.chapterIndex == settingDatas.chapterIndex) && (ChapterController._instance.dialogIndex > settingDatas.maxDialogIndex)))
+            {
+                settingDatas.chapterIndex = ChapterController._instance.chapterIndex;
+                settingDatas.maxDialogIndex = ChapterController._instance.dialogIndex;
+                SaveSettingDatas();
+            }
         }
     }
 
@@ -389,7 +418,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void ClosePanel()
+    public void CloseSavedDataPanel()
     {
         savedDataPanel.SetActive(false);
     }
@@ -402,10 +431,16 @@ public class GameController : MonoBehaviour
 
     public void ShowExtraPanel()
     {
+        titleAudioSource.Stop();
         extraContainer.SetActive(true);
     }
 
-     public void ShowCGPanel()
+    public void ExitExtraContainerBtn()
+    {
+        extraContainer.SetActive(false);
+    }
+
+    public void ShowCGPanel()
     {
         cgPanel.SetActive(true);
         int showNum = settingDatas.cgIndex;
@@ -439,13 +474,25 @@ public class GameController : MonoBehaviour
     public void ShowFullCG()
     {
         settingDatas.cgIndex = 9;
+        settingDatas.memoryIndex = 2;
         SaveSettingDatas();
     }
 
     public void ShowZeroCG()
     {
         settingDatas.cgIndex = 0;
+        settingDatas.memoryIndex = 0;
         SaveSettingDatas();
+    }
+
+    public void ShowConfirmPannel()
+    {
+        confirmPanel.SetActive(true);
+    }
+
+    public void ExitConfirmPannel()
+    {
+        confirmPanel.SetActive(false);
     }
 
     public void ExitBtn()
@@ -480,18 +527,71 @@ public class GameController : MonoBehaviour
 
     public void ShowSettingPanel()
     {
+        titleAudioSource.Stop();
         settingPannel.SetActive(true);
         settingPannel.transform.Find("BGM").GetComponent<Slider>().value = settingDatas.BGMVolume;
+        settingPannel.transform.Find("BGV").GetComponent<Slider>().value = settingDatas.BGVVolume;
         settingPannel.transform.Find("Voice").GetComponent<Slider>().value = settingDatas.VoiceVolume;
         settingPannel.transform.Find("DialogSpeed").GetComponent<Slider>().value = settingDatas.dialogSpeed;
+        settingPannel.transform.Find("SkipSpeed").GetComponent<Slider>().value = settingDatas.skipSpeed;
     }
 
     public void ExitSettingPannel()
     {
         settingPannel.SetActive(false);
-        settingDatas.BGMVolume = ChapterController._instance.bgvAudioSource.volume;
+        settingDatas.BGMVolume = ChapterController._instance.bgmAudioSource.volume;
+        settingDatas.BGVVolume = ChapterController._instance.bgvAudioSource.volume;
         settingDatas.VoiceVolume = ChapterController._instance.cvAudioSource.volume;
         settingDatas.dialogSpeed = 0.35f - ChapterController._instance.dialogSpeed;
+        settingDatas.skipSpeed = 0.35f - ChapterController._instance.skipSpeed;
+        settingDatas.noClothes = ChapterController._instance.noClothes;
         SaveSettingDatas();
+
+        //如果设置了果体，并在章节内，重新Load一下角色图片以立即更新效果
+        if (ChapterController._instance.chapterMode)
+        {
+            ChapterController._instance.LoadRolePic(ChapterController._instance.dialogIndex - 1);//每次显示完，Index+1，所以在这里需要-1
+        }
+    }
+
+    public void ShowMemoryPanel()
+    {
+        memoryPanel.SetActive(true);
+        int showNum = settingDatas.memoryIndex;
+        int totalNum = 2;
+        for (int i = 1; i <= totalNum; i++)
+        {
+            Button memoryBtn = memoryPanel.transform.Find(string.Format("Memory{0}", i)).GetComponent<Button>();
+            if (i <= showNum)
+            {
+                memoryBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("Image/Mode/Memory/Memory{0}", i));
+            }
+            else
+            {
+                memoryBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/Mode/CG/cgno");
+            }
+        }
+    }
+
+    public void ExieMemoryPanel()
+    {
+        memoryPanel.SetActive(false);
+    }
+
+    public void GoMemoryIndex(int index)
+    {
+        ChapterController._instance.LoadXlsFile(1);//默认读取正章
+        ChapterController._instance.chapterIndex = 1;
+        memoryPanel.SetActive(false);
+        extraContainer.SetActive(false);
+        ChapterController._instance.dialogIndex = memoryStartArray[index];
+        ChapterController._instance.memoryEnd = memoryEndArray[index];
+        ChapterController._instance.memoryMode = true;
+        ChapterController._instance.GetNextDialog();
+    }
+
+    public void GameEnd()
+    {
+        Application.Quit();
     }
 }
