@@ -89,6 +89,15 @@ public class ChapterController : MonoBehaviour
 
     public bool noClothes;
 
+    public bool isShowTopMenu;  //显示顶部Menu
+    public GameObject topMenu;
+
+    private Button voiceBtn;    //底部重新播放CV的btn
+
+    public GameObject reviewDialogPanel;
+    public GameObject dialogLayout;     //回看日志框架
+    public GameObject dialogInstance;   //回看预制体
+
 
     // Start is called before the first frame update
     void Start()
@@ -102,9 +111,8 @@ public class ChapterController : MonoBehaviour
         leftRolePic = leftRole.transform.Find("LeftRolePic").gameObject;
         rightRolePic = rightRole.transform.Find("RightRolePic").gameObject;
         centerRolePic = centerRole.transform.Find("CenterRolePic").gameObject;
-
+        voiceBtn = lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("VoiceBtn").GetComponent<Button>();
         screenPicName = SetScreenPicName();
-
     }
 
     private void Awake()
@@ -133,18 +141,42 @@ public class ChapterController : MonoBehaviour
             AutoPlay();
         }
 
-        if (chapterMode && Input.GetKeyDown(KeyCode.LeftControl))
+        if (chapterMode)
         {
-            Debug.Log("按下");
-            isSkipDialog = false;
-            SetSkipValue();
+            if (Input.GetKeyDown(KeyCode.LeftControl))
+            {
+                Debug.Log("按下");
+                isSkipDialog = false;
+                SetSkipValue();
+            }
+            if (Input.GetKeyUp(KeyCode.LeftControl))
+            {
+                Debug.Log("弹起");
+                isSkipDialog = true;
+                SetSkipValue();
+            }
+
+            //空格，单机显示LineContainer
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                if (!lineContainer.activeInHierarchy)
+                {
+                    lineContainer.SetActive(true);
+                }
+                else
+                {
+                    lineContainer.SetActive(false);
+                }
+
+            }
+
+            if(Input.GetMouseButtonDown(0) && !lineContainer.activeInHierarchy && !reviewDialogPanel.activeInHierarchy)
+            {
+                lineContainer.SetActive(true);
+            }
         }
-        if (chapterMode && Input.GetKeyUp(KeyCode.LeftControl))
-        {
-            Debug.Log("弹起");
-            isSkipDialog = true;
-            SetSkipValue();
-        }
+        
+
         if (isTransition)
         {
             if(timeVal >= 0.5f)
@@ -193,6 +225,24 @@ public class ChapterController : MonoBehaviour
         //}
     }
 
+    void FixedUpdate()
+    {
+        if (chapterMode)
+        {
+            //动态显示顶部Menu,条件：1.鼠标移向窗口顶部。2.必须是lineContainer显示的状态
+            //Debug.Log("Mouse: " +  Input.mousePosition.y + " Height: " + Screen.height + " Menu: " + topMenu.GetComponent<RectTransform>().sizeDelta.y);
+            if (Input.mousePosition.y > Screen.height - topMenu.GetComponent<RectTransform>().sizeDelta.y && lineContainer.activeInHierarchy)
+            {
+                topMenu.SetActive(true);
+            }
+            else
+            {
+                topMenu.SetActive(false);
+            }
+        }
+    }
+
+
     //弃用，CSV无法一个文件以sheet来分章节
     private void LoadCSVFile()
     {
@@ -231,7 +281,7 @@ public class ChapterController : MonoBehaviour
 
     public void GetNextDialog()
     {
-        if(memoryMode && dialogIndex > memoryEnd)
+        if (memoryMode && dialogIndex > memoryEnd)
         {
             rolesContainer.SetActive(false);
             lineContainer.SetActive(false);
@@ -259,6 +309,8 @@ public class ChapterController : MonoBehaviour
         //    return;
         //}
 
+
+        voiceBtn.gameObject.SetActive(false);
         cvAudioSource.Stop();
 
         if (dialogIndex < dialogArray.Length && dialogArray[dialogIndex].Length == 12)
@@ -363,6 +415,7 @@ public class ChapterController : MonoBehaviour
             AudioClip voice = (AudioClip)Resources.Load("Audio/" + dialogAudio);
             cvAudioSource.clip = voice;
             cvAudioSource.Play();
+            voiceBtn.gameObject.SetActive(true);
         }
         
 
@@ -669,5 +722,74 @@ public class ChapterController : MonoBehaviour
                     break;
             }
         }
+    }
+
+    //ClearBtn的点击事件（如果直接可以设置line的Active，是否就不用写这个方法了）
+    public void ClearLineContainer()
+    {
+        lineContainer.SetActive(false);
+    }
+
+    //VoiceBtn的点击事件，重新播放一遍CV
+    public void RepeatCVAudio()
+    {
+        cvAudioSource.Play();
+    }
+
+    public void ReviewDialog()
+    {
+        reviewDialogPanel.SetActive(true);
+        lineContainer.SetActive(false);
+        topMenu.SetActive(false);
+        for (int i = 0; i < dialogLayout.transform.childCount; i++)
+        {
+            Destroy(dialogLayout.transform.GetChild(i).gameObject);
+            //dialogLayout.transform.GetChild(i).gameObject.SetActive(false);
+        }
+        for (int i = dialogIndex-1; i>0; i--)
+        {
+            string dialogType = dialogArray[i][1];
+            if (dialogType.Equals("Transition"))//转场前的文本无法回看
+            {
+                break;
+            }
+            if(dialogType.Equals("Aside") || dialogType.Equals("Dialog"))
+            {
+                GameObject tempInstance = Instantiate(dialogInstance, dialogLayout.transform);
+                string tempContext = dialogArray[i][2];
+                tempInstance.transform.Find("InstanceRect").transform.Find("Text").GetComponent<Text>().text = tempContext;
+                if (dialogType.Equals("Dialog"))
+                {
+                    Text tempName = tempInstance.transform.Find("InstanceRect").transform.Find("Name").GetComponent<Text>();
+                    tempName.text = dialogArray[i][4];
+                    tempName.gameObject.SetActive(true);
+                    Button tempBtn = tempInstance.transform.Find("InstanceRect").transform.Find("VoiceBtn").GetComponent<Button>();
+                    tempBtn.transform.Find("Text").GetComponent<Text>().text = i.ToString();
+                    tempBtn.gameObject.SetActive(true);
+                    int dialogIndex = i;
+                    tempBtn.onClick.AddListener(delegate ()
+                    {
+                        ReplayCVAudioBtn(dialogIndex);
+                    });
+                }
+            }
+        }
+
+        reviewDialogPanel.transform.Find("Scrollbar").GetComponent<Scrollbar>().value = 0.01f;
+    }
+
+    public void ReplayCVAudioBtn(int index)
+    {
+        //int index = int.Parse(replayBtn.transform.Find("Text").GetComponent<Text>().text);
+        AudioClip voice = (AudioClip)Resources.Load("Audio/" + dialogArray[index][7]);
+        cvAudioSource.clip = voice;
+        cvAudioSource.Play();
+    }
+
+    public void ExitReviewPanel()
+    {
+        reviewDialogPanel.SetActive(false);
+        lineContainer.SetActive(true);
+        topMenu.SetActive(true);
     }
 }
