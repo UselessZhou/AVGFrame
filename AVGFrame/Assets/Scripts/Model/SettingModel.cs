@@ -14,6 +14,7 @@ namespace Asserts.Scripts.Model
         public float BGVVolume;     //BGV声音
         public float dialogSpeed;   //文本速度
         public float skipSpeed;     //skip速度
+        public float dialogTransparent;     //对话框透明度
         public bool noClothes;     //是否着装
         public bool isSkipReadedContext;    //是否跳过已读的文本
         public int chapterIndex;        //已读的最大章节号

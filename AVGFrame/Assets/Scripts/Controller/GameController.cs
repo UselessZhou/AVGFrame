@@ -534,6 +534,7 @@ public class GameController : MonoBehaviour
         settingPannel.transform.Find("Voice").GetComponent<Slider>().value = settingDatas.VoiceVolume;
         settingPannel.transform.Find("DialogSpeed").GetComponent<Slider>().value = settingDatas.dialogSpeed;
         settingPannel.transform.Find("SkipSpeed").GetComponent<Slider>().value = settingDatas.skipSpeed;
+        settingPannel.transform.Find("Screen").Find("Dialog").Find("DialogTransparent").GetComponent<Slider>().value = settingDatas.dialogTransparent;
     }
 
     public void ExitSettingPannel()
@@ -545,6 +546,7 @@ public class GameController : MonoBehaviour
         settingDatas.dialogSpeed = 0.35f - ChapterController._instance.dialogSpeed;
         settingDatas.skipSpeed = 0.35f - ChapterController._instance.skipSpeed;
         settingDatas.noClothes = ChapterController._instance.noClothes;
+        settingDatas.dialogTransparent = ChapterController._instance.lineContainer.GetComponent<Image>().color.a;
         SaveSettingDatas();
 
         //如果设置了果体，并在章节内，重新Load一下角色图片以立即更新效果
@@ -593,5 +595,27 @@ public class GameController : MonoBehaviour
     public void GameEnd()
     {
         Application.Quit();
+    }
+
+    public void ChangeScreen(int flag)
+    {
+        switch (flag)
+        {
+            case 0:
+                Screen.SetResolution(1920, 1080, true);
+                break;
+            case 1:
+                Screen.SetResolution(1024, 576, false);
+                break;
+            case 2:
+                Screen.SetResolution(1024, 576, false);
+                break;
+            case 3:
+                Screen.SetResolution(1280, 720, false);
+                break;
+                
+
+        }
+
     }
 }

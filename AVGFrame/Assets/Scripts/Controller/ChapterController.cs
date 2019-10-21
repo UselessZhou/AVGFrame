@@ -98,6 +98,10 @@ public class ChapterController : MonoBehaviour
     public GameObject dialogLayout;     //回看日志框架
     public GameObject dialogInstance;   //回看预制体
 
+    public bool backDialogMode;     //滚轮回放
+
+    public int tempMaxIndex;        //暂存最大DialogIndex
+
 
     // Start is called before the first frame update
     void Start()
@@ -210,6 +214,22 @@ public class ChapterController : MonoBehaviour
             }
         }
 
+        if (!reviewDialogPanel.activeInHierarchy && Input.GetAxis("Mouse ScrollWheel") < 0)
+        {
+            if(tempMaxIndex > dialogIndex)
+            {
+                GetBackDialog(false);
+            }
+            else
+            {
+                backDialogMode = false;
+                GetNextDialog();
+            }
+        }
+        if(!reviewDialogPanel.activeInHierarchy && Input.GetAxis("Mouse ScrollWheel") > 0){
+            backDialogMode = true;
+            GetBackDialog(true);
+        }
         //if(shake > 0)
         //{
         //    transform.localPosition -= deltaPos;
@@ -229,9 +249,9 @@ public class ChapterController : MonoBehaviour
     {
         if (chapterMode)
         {
-            //动态显示顶部Menu,条件：1.鼠标移向窗口顶部。2.必须是lineContainer显示的状态
+            //动态显示顶部Menu,条件：1.鼠标移向窗口顶部。2.必须是lineContainer显示的状态。3.非滚轮回滚模式
             //Debug.Log("Mouse: " +  Input.mousePosition.y + " Height: " + Screen.height + " Menu: " + topMenu.GetComponent<RectTransform>().sizeDelta.y);
-            if (Input.mousePosition.y > Screen.height - topMenu.GetComponent<RectTransform>().sizeDelta.y && lineContainer.activeInHierarchy)
+            if (Input.mousePosition.y > Screen.height - topMenu.GetComponent<RectTransform>().sizeDelta.y && lineContainer.activeInHierarchy && !backDialogMode)
             {
                 topMenu.SetActive(true);
             }
@@ -315,6 +335,7 @@ public class ChapterController : MonoBehaviour
 
         if (dialogIndex < dialogArray.Length && dialogArray[dialogIndex].Length == 12)
         {
+            tempMaxIndex = dialogIndex;
             string dialogType = dialogArray[dialogIndex][1];
             if (dialogType.Equals("Animation"))
             {
@@ -389,8 +410,16 @@ public class ChapterController : MonoBehaviour
         string dialogAudio = dialogArray[dialogIndex][7];
         string bgmAudio = dialogArray[dialogIndex][9];
 
-        lineText = dialogContext;
-        ShowLine();
+        if (!backDialogMode)
+        {
+            lineContainer.transform.Find("BottomMenu").gameObject.SetActive(true);
+            lineText = dialogContext;
+            ShowLine();
+        }
+        else
+        {
+            line.text = dialogContext;
+        }
         background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene);
         background.SetActive(true);
         roleName.text = dialogRole;
@@ -420,6 +449,73 @@ public class ChapterController : MonoBehaviour
         
 
         //CaptureScreen();//由于在saveBtn上做截屏的调用只能截取save页面的屏幕，暂时就每次加载dialog的时候都截取一张。
+    }
+
+    public void GetBackDialog(bool flag)
+    {
+        if (flag)
+        {
+            if (dialogIndex <= 1)
+            {
+                return;
+            }
+            dialogIndex--;
+        }
+        else
+        {
+            if(dialogIndex >= dialogArray.Length)
+            {
+                return;
+            }
+            dialogIndex++;
+        }
+        
+        //如果正在协程显示文字，直接关闭协程。
+        if (showLineTexting)
+        {
+            StopCoroutine("ShowLineCoroutine");
+            showLineTexting = false;
+            line.text = lineText;
+            return;
+        }
+        //暂时强制让BGV听完再能显示下一个dialog
+        //if (bgvAudioSource.isPlaying)
+        //{
+        //    isAutoPlay = false;
+        //    isSkipDialog = false;
+        //    return;
+        //}
+
+
+        voiceBtn.gameObject.SetActive(false);
+        cvAudioSource.Stop();
+        lineContainer.transform.Find("BottomMenu").gameObject.SetActive(false);
+        topMenu.SetActive(false);
+
+
+        string dialogType = dialogArray[dialogIndex][1];
+        if (dialogType.Equals("Animation"))
+        {
+            shake = 3f;
+            return;
+        }
+        if (dialogType.Equals("Transition"))
+        {
+            return;
+        }
+        GameController._instance.hideContainers();
+        rolesContainer.SetActive(true);
+        isSavedData = true;
+        chapterMode = true;
+        if (dialogType.Equals("Dialog") || dialogType.Equals("Aside"))
+        {
+            SetDialogDetail();
+        }
+        if (dialogType.Equals("BGV"))
+        {
+            PlayBGVAudio();
+        }
+
     }
 
     //显示游戏选项层
@@ -627,11 +723,13 @@ public class ChapterController : MonoBehaviour
         lineContainer.SetActive(false);
         background.SetActive(false);
         endPanel.SetActive(false);
+        topMenu.SetActive(false);
         isSkipDialog = false;
         isAutoPlay = false;
         bgmAudioSource.Stop();
         bgvAudioSource.Stop();
         cvAudioSource.Stop();
+        chapterMode = false;
         GameController._instance.titleContainer.SetActive(true);
     }
 
