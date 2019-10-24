@@ -332,14 +332,14 @@ public class GameController : MonoBehaviour
             savedDatas[savedDataIndex].savedPicName = ChapterController._instance.screenPicName;
             savedDatas[savedDataIndex].chapterIndex = ChapterController._instance.chapterIndex;
             SaveDatas(savedDataIndex);
-            //在save的时候存储最新的文本序列号。1.章节号大于setting，2.章节相同，dialogIndex大于setting
-            if ((ChapterController._instance.chapterIndex > settingDatas.chapterIndex) || 
-                ((ChapterController._instance.chapterIndex == settingDatas.chapterIndex) && (ChapterController._instance.dialogIndex > settingDatas.maxDialogIndex)))
-            {
-                settingDatas.chapterIndex = ChapterController._instance.chapterIndex;
-                settingDatas.maxDialogIndex = ChapterController._instance.dialogIndex;
-                SaveSettingDatas();
-            }
+            //在save的时候存储最新的文本序列号。1.章节号大于setting，2.章节相同，dialogIndex大于setting,已在getnextdialog中做
+            //if ((ChapterController._instance.chapterIndex > settingDatas.chapterIndex) || 
+            //    ((ChapterController._instance.chapterIndex == settingDatas.chapterIndex) && (ChapterController._instance.dialogIndex > settingDatas.maxDialogIndex)))
+            //{
+            //    settingDatas.chapterIndex = ChapterController._instance.chapterIndex;
+            //    settingDatas.maxDialogIndex = ChapterController._instance.dialogIndex;
+            //    SaveSettingDatas();
+            //}
         }
     }
 
@@ -529,12 +529,17 @@ public class GameController : MonoBehaviour
     {
         titleAudioSource.Stop();
         settingPannel.SetActive(true);
-        settingPannel.transform.Find("BGM").GetComponent<Slider>().value = settingDatas.BGMVolume;
-        settingPannel.transform.Find("BGV").GetComponent<Slider>().value = settingDatas.BGVVolume;
-        settingPannel.transform.Find("Voice").GetComponent<Slider>().value = settingDatas.VoiceVolume;
-        settingPannel.transform.Find("DialogSpeed").GetComponent<Slider>().value = settingDatas.dialogSpeed;
-        settingPannel.transform.Find("SkipSpeed").GetComponent<Slider>().value = settingDatas.skipSpeed;
-        settingPannel.transform.Find("Screen").Find("Dialog").Find("DialogTransparent").GetComponent<Slider>().value = settingDatas.dialogTransparent;
+        ChangeSettingTab(1);
+        settingPannel.transform.Find("ComminSetting").Find("BGM").GetComponent<Slider>().value = settingDatas.BGMVolume;
+        settingPannel.transform.Find("ComminSetting").Find("BGV").GetComponent<Slider>().value = settingDatas.BGVVolume;
+        settingPannel.transform.Find("ComminSetting").Find("Voice").GetComponent<Slider>().value = settingDatas.VoiceVolume;
+        settingPannel.transform.Find("ComminSetting").Find("DialogSpeed").GetComponent<Slider>().value = settingDatas.dialogSpeed;
+        settingPannel.transform.Find("ComminSetting").Find("SkipSpeed").GetComponent<Slider>().value = settingDatas.skipSpeed;
+        settingPannel.transform.Find("ComminSetting").Find("Screen").Find("Dialog").Find("DialogTransparent").GetComponent<Slider>().value = settingDatas.dialogTransparent;
+        settingPannel.transform.Find("CharactersCVSetting").Find("FirstVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[0];
+        settingPannel.transform.Find("CharactersCVSetting").Find("SecondVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[1];
+        settingPannel.transform.Find("CharactersCVSetting").Find("ThirdVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[2];
+        settingPannel.transform.Find("CharactersCVSetting").Find("FourthVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[3];
     }
 
     public void ExitSettingPannel()
@@ -547,12 +552,22 @@ public class GameController : MonoBehaviour
         settingDatas.skipSpeed = 0.35f - ChapterController._instance.skipSpeed;
         settingDatas.noClothes = ChapterController._instance.noClothes;
         settingDatas.dialogTransparent = ChapterController._instance.lineContainer.GetComponent<Image>().color.a;
+        settingDatas.isContinuePlayCV = ChapterController._instance.isContinuePlayCV;
         SaveSettingDatas();
 
         //如果设置了果体，并在章节内，重新Load一下角色图片以立即更新效果
         if (ChapterController._instance.chapterMode)
         {
             ChapterController._instance.LoadRolePic(ChapterController._instance.dialogIndex - 1);//每次显示完，Index+1，所以在这里需要-1
+            //如果设置了文本颜色，这里也及时改一下
+            if (settingDatas.isChangeReadedTextColor)
+            {
+                ChapterController._instance.ChangeReadedTextColor(true);
+            }
+            else
+            {
+                ChapterController._instance.ChangeReadedTextColor(false);
+            }
         }
     }
 
@@ -617,5 +632,26 @@ public class GameController : MonoBehaviour
 
         }
 
+    }
+
+    public void ChangeSettingTab(int tabNum)
+    {
+        switch (tabNum)
+        {
+            case 1:
+                settingPannel.transform.Find("ComminSetting").gameObject.SetActive(true);
+                settingPannel.transform.Find("CharactersCVSetting").gameObject.SetActive(false);
+                break;
+            case 2:
+                settingPannel.transform.Find("ComminSetting").gameObject.SetActive(false);
+                settingPannel.transform.Find("CharactersCVSetting").gameObject.SetActive(true);
+                break;
+        }
+    }
+
+    public void ChangeReadedTextColour(bool flag)
+    {
+        settingDatas.isChangeReadedTextColor = flag;
+        ChapterController._instance.ChangeReadedTextColor(flag);
     }
 }

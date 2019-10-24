@@ -29,9 +29,9 @@ public class ChapterController : MonoBehaviour
     private string[][] dialogArray; //剧本的二维数组
     public int dialogIndex;        //剧本的索引
 
-    private Text line;          //对话
+    public Text line;          //对话
     private string lineText;    //具体内容
-    private Text roleName;      //角色名称
+    public Text roleName;      //角色名称
 
     private GameObject rightRole;   //右侧角色
     private GameObject centerRole;   //中间角色
@@ -46,6 +46,7 @@ public class ChapterController : MonoBehaviour
 
     //private AudioClip cvAudio;
     public AudioSource cvAudioSource;
+    public bool isContinuePlayCV;
 
     //private AudioClip bgvAudio;
     public AudioSource bgvAudioSource;
@@ -102,6 +103,8 @@ public class ChapterController : MonoBehaviour
 
     public int tempMaxIndex;        //暂存最大DialogIndex
 
+    public bool isChangeReadedTextColor;    //是否更改已读文本颜色
+
 
     // Start is called before the first frame update
     void Start()
@@ -117,6 +120,8 @@ public class ChapterController : MonoBehaviour
         centerRolePic = centerRole.transform.Find("CenterRolePic").gameObject;
         voiceBtn = lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("VoiceBtn").GetComponent<Button>();
         screenPicName = SetScreenPicName();
+        isContinuePlayCV = GameController._instance.settingDatas.isContinuePlayCV;
+        isChangeReadedTextColor = GameController._instance.settingDatas.isChangeReadedTextColor;
     }
 
     private void Awake()
@@ -313,6 +318,12 @@ public class ChapterController : MonoBehaviour
             return;
 
         }
+        //更新最大已读序列
+        if ((chapterIndex >= GameController._instance.settingDatas.chapterIndex) && (dialogIndex > GameController._instance.settingDatas.maxDialogIndex))
+        {
+            GameController._instance.settingDatas.maxDialogIndex = dialogIndex;
+        }
+
         //如果正在协程显示文字，直接关闭协程。
         if (showLineTexting)
         {
@@ -331,8 +342,11 @@ public class ChapterController : MonoBehaviour
 
 
         voiceBtn.gameObject.SetActive(false);
-        cvAudioSource.Stop();
-
+        if (!isContinuePlayCV)
+        {
+            cvAudioSource.Stop();
+        }
+        
         if (dialogIndex < dialogArray.Length && dialogArray[dialogIndex].Length == 12)
         {
             tempMaxIndex = dialogIndex;
@@ -409,6 +423,16 @@ public class ChapterController : MonoBehaviour
         string dialogRole = dialogArray[dialogIndex][4];
         string dialogAudio = dialogArray[dialogIndex][7];
         string bgmAudio = dialogArray[dialogIndex][9];
+        if (backDialogMode)
+        {
+            line.color = Color.blue;
+            roleName.color = Color.blue;
+        }
+        else
+        {
+            //更改已读文本颜色
+            ChangeReadedTextColor(isChangeReadedTextColor);
+        }
 
         if (!backDialogMode)
         {
@@ -442,6 +466,23 @@ public class ChapterController : MonoBehaviour
         {
             LoadRolePic(dialogIndex);
             AudioClip voice = (AudioClip)Resources.Load("Audio/" + dialogAudio);
+            //根据角色名字设置不同cv的声音大小
+            if (dialogRole.Equals("粉"))
+            {
+                cvAudioSource.volume = GameController._instance.settingDatas.charactersVolume[0];
+            }
+            if (dialogRole.Equals("橙"))
+            {
+                cvAudioSource.volume = GameController._instance.settingDatas.charactersVolume[1];
+            }
+            if (dialogRole.Equals("蓝"))
+            {
+                cvAudioSource.volume = GameController._instance.settingDatas.charactersVolume[2];
+            }
+            if (dialogRole.Equals("男"))
+            {
+                cvAudioSource.volume = GameController._instance.settingDatas.charactersVolume[3];
+            }
             cvAudioSource.clip = voice;
             cvAudioSource.Play();
             voiceBtn.gameObject.SetActive(true);
@@ -890,4 +931,34 @@ public class ChapterController : MonoBehaviour
         lineContainer.SetActive(true);
         topMenu.SetActive(true);
     }
+
+    public void IsContinuePlayCV(bool value)
+    {
+        isContinuePlayCV = value;
+    }
+
+    public void ChangeReadedTextColor(bool value)
+    {
+        isChangeReadedTextColor = value;
+        if (isChangeReadedTextColor)
+        {
+            if ((chapterIndex < GameController._instance.settingDatas.chapterIndex) ||
+                   ((chapterIndex == GameController._instance.settingDatas.chapterIndex) && (dialogIndex < GameController._instance.settingDatas.maxDialogIndex)))
+            {
+                line.color = Color.yellow;
+                roleName.color = Color.yellow;
+            }
+            else
+            {
+                line.color = Color.white;
+                roleName.color = Color.white;
+            }
+        }
+        else
+        {
+            line.color = Color.white;
+            roleName.color = Color.white;
+        }
+    }
+    
 }

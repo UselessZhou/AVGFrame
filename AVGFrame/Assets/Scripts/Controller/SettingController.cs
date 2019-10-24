@@ -7,7 +7,7 @@ public class SettingController : MonoBehaviour
 {
     public static SettingController _isntance;
     public GameObject Bgm, Bgv, Voice;
-    public Slider BgmSlider, BgvSlider, VoiceSlider, DialogSpeedSlider, SkipSpeedSlider, DialogTransparentSlider;
+    public Slider BgmSlider, BgvSlider, VoiceSlider, DialogSpeedSlider, SkipSpeedSlider, DialogTransparentSlider, FirstVoiceSlider, SecondVoiceSlider, ThirdVoiceSlider, FourthVoiceSlider;
     // Use this for initialization
     void Awake()
     {
@@ -22,7 +22,6 @@ public class SettingController : MonoBehaviour
     public void ChangeBgmVolume()
     {
         Bgm.GetComponent<AudioSource>().volume = BgmSlider.value;
-        Debug.Log(BgmSlider.value);
     }
 
     public void ChangeVoiceVolume()
@@ -43,13 +42,30 @@ public class SettingController : MonoBehaviour
     public void ChangeBgvVolume()
     {
         Bgv.GetComponent<AudioSource>().volume = BgvSlider.value;
-        Debug.Log(BgvSlider.value);
     }
 
     public void ChangeDialogTransparent()
     {
         ChapterController._instance.lineContainer.GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f, DialogTransparentSlider.value);
-        Debug.Log(DialogTransparentSlider.value);
     }
-    
+
+    public void ChangeFirstVoiceVolume()
+    {
+        GameController._instance.settingDatas.charactersVolume[0] = FirstVoiceSlider.value;
+    }
+
+    public void ChangeSecondVoiceVolume()
+    {
+        GameController._instance.settingDatas.charactersVolume[1] = SecondVoiceSlider.value;
+    }
+
+    public void ChangeThirdVoiceVolume()
+    {
+        GameController._instance.settingDatas.charactersVolume[2] = ThirdVoiceSlider.value;
+    }
+
+    public void ChangeFourthVoiceVolume()
+    {
+        GameController._instance.settingDatas.charactersVolume[3] = FourthVoiceSlider.value;
+    }
 }
