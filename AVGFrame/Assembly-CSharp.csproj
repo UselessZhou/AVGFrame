@@ -64,6 +64,7 @@
     <Compile Include="Assets\Scripts\Controller\ChapterController.cs" />
     <Compile Include="Assets\Scripts\Controller\GameController.cs" />
     <Compile Include="Assets\Scripts\Controller\SettingController.cs" />
+    <Compile Include="Assets\Scripts\Model\CGIndexModel.cs" />
     <Compile Include="Assets\Scripts\Model\RoleModel.cs" />
     <Compile Include="Assets\Scripts\Model\SavedDataModel.cs" />
     <Compile Include="Assets\Scripts\Model\SettingModel.cs" />

@@ -10,6 +10,7 @@ using UnityEngine.UI;
 using System;
 using Excel;
 using System.Data;
+using UnityEngine.EventSystems;
 
 public class ChapterController : MonoBehaviour
 {
@@ -58,8 +59,11 @@ public class ChapterController : MonoBehaviour
     private bool isAutoPlay;    //是否自动播放
 
     private bool isSkipDialog;  //是否快速跳过对话
-    private bool isSkipUnread;  //是否未读文本也跳过
+    public bool isSkipUnread;  //是否未读文本也跳过
     public float skipSpeed;     //skip文本速度
+    public bool isSkipUntilHScene;
+    public bool isSkipUntilShoot;
+
 
     public float dialogSpeed;  //文本显示速度
 
@@ -77,10 +81,13 @@ public class ChapterController : MonoBehaviour
     private float timeVal;      //设置转场时间
 
     //镜头晃动（没有效果）
-    public Transform cameraTransform;
+    public Camera mainCamera;
+    private float shakeDelta = 0.005f;
+    public float shakeLevel = 3f;
     private Vector3 originalPos;
     private float shake = 0f;
     private Vector3 deltaPos = Vector3.zero;
+    private bool animationAction;
 
     //人物晃动
     private bool isMoveAction;
@@ -105,6 +112,16 @@ public class ChapterController : MonoBehaviour
 
     public bool isChangeReadedTextColor;    //是否更改已读文本颜色
 
+    public int rightFunction;   //右键功能
+
+    public int shootNumber;     //sj倒数行数
+
+    public int shootChoice;     //sj选择
+
+    private string tempCGPic;   //根据sj选择，显示的CG
+    public GameObject shootChoiceContainer;
+
+    public GameObject displayCanvas;
 
     // Start is called before the first frame update
     void Start()
@@ -122,6 +139,12 @@ public class ChapterController : MonoBehaviour
         screenPicName = SetScreenPicName();
         isContinuePlayCV = GameController._instance.settingDatas.isContinuePlayCV;
         isChangeReadedTextColor = GameController._instance.settingDatas.isChangeReadedTextColor;
+        rightFunction = GameController._instance.settingDatas.rightFunction;
+        isSkipUntilHScene = GameController._instance.settingDatas.isSkipUntilHScene;
+        isSkipUnread = GameController._instance.settingDatas.isSkipReadedContext;
+        isSkipUntilShoot = GameController._instance.settingDatas.isSkipUntilShoot;
+        shootNumber = GameController._instance.settingDatas.shootNumber;
+        shootChoice = GameController._instance.settingDatas.shootChoices;
     }
 
     private void Awake()
@@ -134,8 +157,7 @@ public class ChapterController : MonoBehaviour
         dialogSpeed = 0.05f;
         skipSpeed = 0.05f;
         memoryMode = false;
-        //cameraTransform = GetComponent(typeof(Transform)) as Transform;
-        originalPos = cameraTransform.localPosition;
+        mainCamera = GetComponent<Camera>();
         chapterIndex = 0;
         LoadXlsFile(chapterIndex);//首先进入序章
 
@@ -179,9 +201,85 @@ public class ChapterController : MonoBehaviour
 
             }
 
-            if(Input.GetMouseButtonDown(0) && !lineContainer.activeInHierarchy && !reviewDialogPanel.activeInHierarchy)
+            //鼠标左键功能
+            if(Input.GetMouseButtonDown(0))
             {
-                lineContainer.SetActive(true);
+                GameObject hitUIObject = null;
+
+                if (EventSystem.current.IsPointerOverGameObject())
+                {
+                    hitUIObject = GetMouseOverUIObject(displayCanvas);
+                    Debug.Log("---- EventSystem.current.IsPointerOverGameObject ----");
+                }
+                if(null == hitUIObject || hitUIObject.tag.Trim() != "OperationButton")
+                {
+                    if (!lineContainer.activeInHierarchy && !reviewDialogPanel.activeInHierarchy)
+                    {
+                        lineContainer.SetActive(true);
+                    }
+                    else if (lineContainer.activeInHierarchy && !backDialogMode)
+                    {
+                        GetNextDialog();
+                    }
+                    else if (backDialogMode)
+                    {
+                        if (tempMaxIndex > dialogIndex)
+                        {
+                            GetBackDialog(false);
+                        }
+                        else
+                        {
+                            backDialogMode = false;
+                            GetNextDialog();
+                        }
+                    }
+                }
+                
+            }
+
+            //鼠标右键功能
+            if (Input.GetMouseButtonDown(1))
+            {
+                switch (rightFunction)
+                {
+                    case 1://隐藏对话框
+                        if (!lineContainer.activeInHierarchy)
+                        {
+                            lineContainer.SetActive(true);
+                        }
+                        else
+                        {
+                            lineContainer.SetActive(false);
+                        }
+                        break;
+                    case 2://重复声音
+                        if (voiceBtn.IsActive())
+                        {
+                            cvAudioSource.Play();
+                        }
+                        break;
+                    case 3://调出Menu
+                        if (!GameController._instance.settingPannel.activeInHierarchy)
+                        {
+                            GameController._instance.ShowSettingPanel();
+                        }
+                        else
+                        {
+                            GameController._instance.ExitSettingPannel();
+                        }
+                        break;
+                    case 4://调出Backlog
+                        if (!reviewDialogPanel.activeInHierarchy)
+                        {
+                            ReviewDialog();
+                        }
+                        else
+                        {
+                            ExitReviewPanel();
+                        }
+                        break;
+                }
+
             }
         }
         
@@ -219,6 +317,7 @@ public class ChapterController : MonoBehaviour
             }
         }
 
+        //滚轮重播之前的剧本
         if (!reviewDialogPanel.activeInHierarchy && Input.GetAxis("Mouse ScrollWheel") < 0)
         {
             if(tempMaxIndex > dialogIndex)
@@ -235,19 +334,23 @@ public class ChapterController : MonoBehaviour
             backDialogMode = true;
             GetBackDialog(true);
         }
-        //if(shake > 0)
-        //{
-        //    transform.localPosition -= deltaPos;
 
-        //    deltaPos = UnityEngine.Random.insideUnitSphere * 30f;
-
-        //    transform.localPosition += deltaPos;
-        //    shake -= Time.deltaTime * 1.0f; ;
-        //}
-        //else
-        //{
-        //    shake = 0f;
-        //}
+        if (animationAction)
+        {
+            if (shake > 0)
+            {
+                shake -= Time.deltaTime * 1.0f;
+                mainCamera.rect = new Rect(shakeDelta * (-1.0f + shakeLevel * UnityEngine.Random.value),
+                                shakeDelta * (-1.0f + shakeLevel * UnityEngine.Random.value), 1.0f, 1.0f);
+            }
+            else
+            {
+                shake = 0f;
+                mainCamera.rect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
+                animationAction = false;
+            }
+        }
+        
     }
 
     void FixedUpdate()
@@ -316,8 +419,13 @@ public class ChapterController : MonoBehaviour
             bgvAudioSource.Stop();
             cvAudioSource.Stop();
             return;
-
         }
+        //如果正在播放动画，则停止
+        if (animationAction)
+        {
+            shake = -1.0f;
+        }
+
         //更新最大已读序列
         if ((chapterIndex >= GameController._instance.settingDatas.chapterIndex) && (dialogIndex > GameController._instance.settingDatas.maxDialogIndex))
         {
@@ -347,14 +455,42 @@ public class ChapterController : MonoBehaviour
             cvAudioSource.Stop();
         }
         
-        if (dialogIndex < dialogArray.Length && dialogArray[dialogIndex].Length == 12)
+        if (dialogIndex < dialogArray.Length && dialogArray[dialogIndex].Length == 15)
         {
             tempMaxIndex = dialogIndex;
             string dialogType = dialogArray[dialogIndex][1];
             if (dialogType.Equals("Animation"))
             {
-                shake = 3f;
+                animationAction = true;
+                shake = 2f;
+                dialogIndex++;
                 return;
+            }
+            if(isSkipUntilHScene && null != dialogArray[dialogIndex][13] && dialogArray[dialogIndex][13].Equals("on"))
+            {
+                isSkipDialog = false;
+            }
+
+            if(!dialogArray[dialogIndex][14].Equals("") && int.Parse(dialogArray[dialogIndex][14]) <= shootNumber)
+            {
+                if(isSkipUntilShoot && int.Parse(dialogArray[dialogIndex][14]) == shootNumber)
+                {
+                    isSkipDialog = false;
+                }
+                Image shootNumImage = background.transform.Find("shootNum").GetComponent<Image>();
+                shootNumImage.sprite = Resources.Load<Sprite>("Image/ChapterBG/shoot" + dialogArray[dialogIndex][14]);
+                shootNumImage.gameObject.SetActive(true);
+
+                //如果num=1，并且需要选择内外射，显示选择框
+                if(int.Parse(dialogArray[dialogIndex][14]) == 1 && shootChoice == 3)
+                {
+                    //选择框
+                    shootChoiceContainer.SetActive(true);
+                }
+            }
+            else
+            {
+                background.transform.Find("shootNum").GetComponent<Image>().gameObject.SetActive(false);
             }
 
             GameController._instance.hideContainers();
@@ -365,7 +501,7 @@ public class ChapterController : MonoBehaviour
             {
                 endPanel.SetActive(true);
             }
-            else if (dialogType.Equals("Dialog") || dialogType.Equals("Aside"))
+            else if (dialogType.Equals("Dialog") || dialogType.Equals("Aside") || dialogType.Equals("CG"))
             {
                 SetDialogDetail();
             }else if (dialogType.Equals("Option"))
@@ -381,18 +517,7 @@ public class ChapterController : MonoBehaviour
                 //目前只有一种转场特效，不做判断
                 isTransition = true;
             }
-
-            string cgIndex = dialogArray[dialogIndex][10];
             string memoryIndex = dialogArray[dialogIndex][11];
-            if (!cgIndex.Equals(""))
-            {
-                int indexNum = int.Parse(cgIndex);
-                if(indexNum > GameController._instance.settingDatas.cgIndex)
-                {
-                    GameController._instance.settingDatas.cgIndex = indexNum;
-                    GameController._instance.SaveSettingDatas();
-                }
-            }
             if (!memoryIndex.Equals(""))
             {
                 int indexNum = int.Parse(memoryIndex);
@@ -423,6 +548,9 @@ public class ChapterController : MonoBehaviour
         string dialogRole = dialogArray[dialogIndex][4];
         string dialogAudio = dialogArray[dialogIndex][7];
         string bgmAudio = dialogArray[dialogIndex][9];
+        string cgIndex = dialogArray[dialogIndex][10];
+        List<string> cgList = new List<string>();
+
         if (backDialogMode)
         {
             line.color = Color.blue;
@@ -444,7 +572,88 @@ public class ChapterController : MonoBehaviour
         {
             line.text = dialogContext;
         }
-        background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene);
+
+        if (dialogArray[dialogIndex][1].Equals("CG"))
+        {
+            string cgName = "";
+            
+            if(shootChoice == 1)
+            {
+                cgName = cgIndex + "_in";
+                background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene + "_in");
+            }
+            else if(shootChoice == 2)
+            {
+                cgName = cgIndex + "_out";
+                background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene + "_out");
+            }
+            else
+            {
+                if(null == tempCGPic)//如果出现特殊情况变量为空，都内设处理
+                {
+                    cgName = cgIndex + "_in";
+                    background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene + "_in");
+                }
+                else
+                {
+                    cgName = cgIndex + tempCGPic;
+                    background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene + tempCGPic);
+                }
+            }
+
+            //将CG加入解锁的CG数组中
+            int arrayIndex = int.Parse(cgIndex);
+            if(GameController._instance.cgArray[arrayIndex-1].Length == 1 & GameController._instance.cgArray[arrayIndex-1][0].Equals("0"))
+            {
+                GameController._instance.cgArray[arrayIndex-1][0] = cgName;
+            }
+            else
+            {
+                for(int i = 0; i < GameController._instance.cgArray[arrayIndex-1].Length; i++)
+                {
+                    if (GameController._instance.cgArray[arrayIndex-1][i].Equals(cgName))
+                    {
+                        break;
+                    }
+                    cgList.Add(GameController._instance.cgArray[arrayIndex-1][i]);
+                    if((i+1) == GameController._instance.cgArray[arrayIndex-1].Length)
+                    {
+                        cgList.Add(cgName);
+                        GameController._instance.cgArray[arrayIndex-1] = cgList.ToArray();
+                    }
+                }
+            }
+        }
+        else
+        {
+            background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene);
+
+            if (!cgIndex.Equals(""))
+            {
+                string[] arrayTemp = cgIndex.Split('_');
+                int arrayIndex = int.Parse(arrayTemp[0]);
+                if (GameController._instance.cgArray[arrayIndex-1].Length == 1 & GameController._instance.cgArray[arrayIndex-1][0].Equals("0"))
+                {
+                    GameController._instance.cgArray[arrayIndex-1][0] = cgIndex;
+                }
+                else
+                {
+                    for (int i = 0; i < GameController._instance.cgArray[arrayIndex-1].Length; i++)
+                    {
+                        if (GameController._instance.cgArray[arrayIndex-1][i].Equals(cgIndex))
+                        {
+                            break;
+                        }
+                        cgList.Add(GameController._instance.cgArray[arrayIndex-1][i]);
+                        if ((i + 1) == GameController._instance.cgArray[arrayIndex-1].Length)
+                        {
+                            cgList.Add(cgIndex);
+                            GameController._instance.cgArray[arrayIndex-1] = cgList.ToArray();
+                        }
+                    }
+                }
+            }
+        }
         background.SetActive(true);
         roleName.text = dialogRole;
         leftRolePic.SetActive(false);
@@ -510,7 +719,13 @@ public class ChapterController : MonoBehaviour
             }
             dialogIndex++;
         }
-        
+
+        //如果正在播放动画，则停止
+        if (animationAction)
+        {
+            shake = -1.0f;
+        }
+
         //如果正在协程显示文字，直接关闭协程。
         if (showLineTexting)
         {
@@ -537,7 +752,8 @@ public class ChapterController : MonoBehaviour
         string dialogType = dialogArray[dialogIndex][1];
         if (dialogType.Equals("Animation"))
         {
-            shake = 3f;
+            animationAction = true;
+            shake = 2f;
             return;
         }
         if (dialogType.Equals("Transition"))
@@ -794,6 +1010,16 @@ public class ChapterController : MonoBehaviour
         isSkipUnread = isSkip;
     }
 
+    public void SkipUntilHScene(bool isUntil)
+    {
+        isSkipUntilHScene = isUntil;
+    }
+
+    public void SkipUntilShoot(bool isUntil)
+    {
+        isSkipUntilShoot = isUntil;
+    }
+
     public void LoadRolePic(int index)
     {
 
@@ -961,4 +1187,24 @@ public class ChapterController : MonoBehaviour
         }
     }
     
+    public void SetTempCGPic(string cg)
+    {
+        tempCGPic = cg;
+        GetNextDialog();
+    }
+
+    private GameObject GetMouseOverUIObject(GameObject canvas)
+    {
+        PointerEventData pointerEventData = new PointerEventData(EventSystem.current);
+        pointerEventData.position = Input.mousePosition;
+        GraphicRaycaster gr = canvas.GetComponent<GraphicRaycaster>();
+        List<RaycastResult> results = new List<RaycastResult>();
+        gr.Raycast(pointerEventData, results);
+        if (results.Count > 1)//由于Btn下面还有Text，拿0会拿到Text的Object，要么Btn不带字体（Text点隐藏），要么拿1
+        {
+            return results[1].gameObject;
+        }
+
+        return null;
+    }
 }

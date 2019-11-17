@@ -54,8 +54,16 @@ public class GameController : MonoBehaviour
     public GameObject memoryPanel;
     private int[] memoryStartArray;
     private int[] memoryEndArray;
+    //test
+    public CGIndexModel cgim = new CGIndexModel();
 
-    private GameObject settingPannel;
+    public GameObject settingPannel;
+
+    public string[][] cgArray;
+    private ArrayList cgDetailArrayList;
+    private string zeroCGArray;
+    private string fullCGArray;
+
 
     private void Awake()
     {
@@ -71,6 +79,8 @@ public class GameController : MonoBehaviour
         savedDatasFile = "savedData.json";
         qSavedDataFile = "quickSavedData.json";
         settingDataFile = "settingData.json";
+        zeroCGArray = "0;0;0;0;0;0";
+        fullCGArray = "1_1,1_2,1_3;2_1,2_in,2_out;3_1,3_2;4_1,4_2;5_1,5_2;6_1,6_2";
         titleContainer = displayCanvas.transform.Find("TitleContainer").gameObject;
         savedDataPanel = displayCanvas.transform.Find("SavedDataPanel").gameObject;
         skipContainer = displayCanvas.transform.Find("SkipContainer").gameObject;
@@ -92,7 +102,10 @@ public class GameController : MonoBehaviour
         LoadSavedDatas();
         LoadQuickSaveData();
         LoadSettingDatas();
+        AnalyzeCGArray(settingDatas.cgSavedData);
         ChapterController._instance.noClothes = settingDatas.noClothes;//先要读取是否着装的设置
+
+
     }
 
     // Update is called once per frame
@@ -443,27 +456,121 @@ public class GameController : MonoBehaviour
     public void ShowCGPanel()
     {
         cgPanel.SetActive(true);
-        int showNum = settingDatas.cgIndex;
-        int totalNum = 9;
-        //int showNum = 5;
-        for (int i = 1; i <= totalNum; i++)
+        //int showNum = settingDatas.cgIndex;
+        //int totalNum = 9;
+        ////int showNum = 5;
+        //for (int i = 1; i <= totalNum; i++)
+        //{
+        //    Button cgBtn = cgPanel.transform.Find(string.Format("CG{0}", i)).GetComponent<Button>();
+        //    if (i <= showNum)
+        //    {
+        //        cgBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("Image/Mode/CG/ev{0}", i));
+        //        cgBtn.onClick.AddListener(delegate ()
+        //        {
+        //            cgDetail.SetActive(true);
+        //            Button detailBtn = cgDetail.transform.Find("Detail").GetComponent<Button>();
+        //            detailBtn.GetComponent<Image>().sprite = cgBtn.GetComponent<Image>().sprite;
+        //        });
+        //    }
+        //    else
+        //    {
+        //        cgBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/Mode/CG/cgno");
+        //    }
+        //}
+        for(int i=1; i <= cgArray.Length; i++)
         {
             Button cgBtn = cgPanel.transform.Find(string.Format("CG{0}", i)).GetComponent<Button>();
-            if (i <= showNum)
+            if (!cgArray[i-1][0].Equals("0"))
             {
-                cgBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("Image/Mode/CG/ev{0}", i));
-                cgBtn.onClick.AddListener(delegate ()
-                {
-                    cgDetail.SetActive(true);
-                    Button detailBtn = cgDetail.transform.Find("Detail").GetComponent<Button>();
-                    detailBtn.GetComponent<Image>().sprite = cgBtn.GetComponent<Image>().sprite;
-                });
+                string cgName = i + "_0";
+                cgBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("Image/ChapterBG/ev{0}", cgName));
             }
             else
             {
-                cgBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/Mode/CG/cgno");
+                cgBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/cgno");
             }
         }
+    }
+
+    public void ShowCGDetail(int cgIndex)
+    {
+        cgDetailArrayList = new ArrayList();
+        
+        for(int i=0; i<cgArray.Length; i++)
+        {
+            if(i+1 == cgIndex)
+            {
+                for (int j = 0; j < cgArray[i].Length; j++)
+                {
+                    cgDetailArrayList.Add(cgArray[i][j]);
+                }
+            }
+        }
+
+        if (!cgDetailArrayList[0].Equals("0"))
+        {
+            cgDetail.SetActive(true);
+            Button detailBtn = cgDetail.transform.Find("Detail").GetComponent<Button>();
+            detailBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("Image/Mode/CG/ev{0}", cgDetailArrayList[0]));
+            cgDetailArrayList.RemoveAt(0);
+        }
+        //currentCGIndex = c[cgArray];
+    }
+
+    public void AnalyzeCGArray(string array)
+    {
+        string[] data = array.Split(';');
+        cgArray = new string[data.Length][];
+        for (int i = 0; i < data.Length; i++)
+        {
+            string[] tmpArray = data[i].Split(',');
+            cgArray[i] = new string[tmpArray.Length];
+            //if (tmpArray.Length != 1 || !tmpArray[0].Equals("0"))
+            //{
+                for (int j = 0; j < tmpArray.Length; j++)
+                {
+                    cgArray[i][j] = tmpArray[j];
+                }
+            //}
+
+        }
+    }
+    
+    public string CGArrayToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < cgArray.Length; i++)
+        {
+            for (int j = 0; j < cgArray[i].Length; j++)
+            {
+                sb.Append(cgArray[i][j]);
+                if(j+1 < cgArray[i].Length)
+                {
+                    sb.Append(",");
+                }
+            }
+
+            if (i + 1 < cgArray.Length)
+            {
+                sb.Append(";");
+            }
+        }
+        return sb.ToString();
+    }
+
+    public void ShowNextCG()
+    {
+        if (cgDetailArrayList.Count > 0)
+        {
+            Button detailBtn = cgDetail.transform.Find("Detail").GetComponent<Button>();
+            detailBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("Image/Mode/CG/ev{0}", cgDetailArrayList[0]));
+            cgDetailArrayList.RemoveAt(0);
+        }
+        else
+        {
+            CloseCGDetail();
+        }
+
     }
 
     public void CloseCGDetail()
@@ -473,15 +580,15 @@ public class GameController : MonoBehaviour
 
     public void ShowFullCG()
     {
-        settingDatas.cgIndex = 9;
-        settingDatas.memoryIndex = 2;
+        //settingDatas.cgIndex = 9;
+        AnalyzeCGArray(fullCGArray);
         SaveSettingDatas();
     }
 
     public void ShowZeroCG()
     {
-        settingDatas.cgIndex = 0;
-        settingDatas.memoryIndex = 0;
+        //settingDatas.cgIndex = 0;
+        AnalyzeCGArray(zeroCGArray);
         SaveSettingDatas();
     }
 
@@ -553,6 +660,13 @@ public class GameController : MonoBehaviour
         settingDatas.noClothes = ChapterController._instance.noClothes;
         settingDatas.dialogTransparent = ChapterController._instance.lineContainer.GetComponent<Image>().color.a;
         settingDatas.isContinuePlayCV = ChapterController._instance.isContinuePlayCV;
+        settingDatas.rightFunction = ChapterController._instance.rightFunction;
+        settingDatas.isSkipReadedContext = ChapterController._instance.isSkipUnread;
+        settingDatas.isSkipUntilHScene = ChapterController._instance.isSkipUntilHScene;
+        settingDatas.isSkipUntilShoot = ChapterController._instance.isSkipUntilShoot;
+        settingDatas.shootNumber = ChapterController._instance.shootNumber;
+        settingDatas.shootChoices = ChapterController._instance.shootChoice;
+        settingDatas.cgSavedData = CGArrayToString();
         SaveSettingDatas();
 
         //如果设置了果体，并在章节内，重新Load一下角色图片以立即更新效果
@@ -653,5 +767,20 @@ public class GameController : MonoBehaviour
     {
         settingDatas.isChangeReadedTextColor = flag;
         ChapterController._instance.ChangeReadedTextColor(flag);
+    }
+
+    public void SetRightControl(int flag)
+    {
+        ChapterController._instance.rightFunction = flag;
+    }
+
+    public void SetShootNumber(int num)
+    {
+        ChapterController._instance.shootNumber = num;
+    }
+
+    public void SetShootChoices(int choice)
+    {
+        ChapterController._instance.shootChoice = choice;
     }
 }
