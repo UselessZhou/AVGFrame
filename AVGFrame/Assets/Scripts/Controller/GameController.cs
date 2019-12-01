@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using System.Text;
 using Asserts.Scripts.Model;
 using Newtonsoft.Json;
+using System;
 
 public class GameController : MonoBehaviour
 {
@@ -22,7 +23,6 @@ public class GameController : MonoBehaviour
     public GameObject logo; //Logo页面显示
     public Image bg;   //Title背景图片
     public GameObject titleContainer;
-    public AudioSource titleAudioSource;
 
     //save页面
     public GameObject savedDataPanel;
@@ -50,12 +50,14 @@ public class GameController : MonoBehaviour
     private GameObject confirmPanel;
 
     private GameObject bgmPanel;
+    private AudioSource bgmSource;
+    //private bool isPlayMusic;
 
     public GameObject memoryPanel;
     private int[] memoryStartArray;
     private int[] memoryEndArray;
     //test
-    public CGIndexModel cgim = new CGIndexModel();
+    //public CGIndexModel cgim = new CGIndexModel();
 
     public GameObject settingPannel;
 
@@ -63,6 +65,8 @@ public class GameController : MonoBehaviour
     private ArrayList cgDetailArrayList;
     private string zeroCGArray;
     private string fullCGArray;
+
+    private bool cgMode;    //CG模式
 
 
     private void Awake()
@@ -93,56 +97,61 @@ public class GameController : MonoBehaviour
         confirmPanel = extraContainer.transform.Find("ConfirmPanel").gameObject;
 
         bgmPanel = displayCanvas.transform.Find("BGMPanel").gameObject;
+        bgmSource = displayCanvas.transform.Find("AudioContainer").gameObject.transform.Find("TitleAudio").GetComponent<AudioSource>();
 
         memoryPanel = displayCanvas.transform.Find("MemoryPanel").gameObject;
-        memoryStartArray = new int[] { 28, 44 };
-        memoryEndArray = new int[] { 42, 65 };
+        memoryStartArray = new int[] { 29, 46 };
+        memoryEndArray = new int[] { 43, 67 };
 
         settingPannel = displayCanvas.transform.Find("SettingPanel").gameObject;
-        LoadSavedDatas();
-        LoadQuickSaveData();
-        LoadSettingDatas();
+        savedDatas = new List<SavedDataModel>();
+        LoadDatas<List<SavedDataModel>>(savedDatasFile, savedDatas);
+        qSavedData = new SavedDataModel();
+        LoadDatas<SavedDataModel>(qSavedDataFile, qSavedData);
+        settingDatas = new SettingModel();
+        LoadDatas<SettingModel>(settingDataFile, settingDatas);
         AnalyzeCGArray(settingDatas.cgSavedData);
         ChapterController._instance.noClothes = settingDatas.noClothes;//先要读取是否着装的设置
-
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (cgMode)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Debug.Log("按下");
+                ShowNextCG();
+            }
+            if (Input.GetMouseButtonDown(1))
+            {
+                CloseCGDetail();
+                cgMode = false;
+            }
+        }
     }
 
     private void OnApplicationQuit()
     {
-        //如果未做过存档，删除截屏时保留的png
-        //if (!ChapterController._instance.isSavedData)
-        //{
-        //    if (File.Exists(savedDatasPath + ChapterController._instance.screenPicName + ".png"))
-        //    {
-        //        File.Delete(savedDatasPath + ChapterController._instance.screenPicName + ".png");
-        //    }
-        //}
-        ExitSettingPannel();
+        settingDatas.cgSavedData = CGArrayToString();
+        SaveDatas<SettingModel>(settingDataFile, settingDatas);
+        SaveDatas<SavedDataModel>(qSavedDataFile, qSavedData);
+        SaveDatas<List<SavedDataModel>>(savedDatasFile, savedDatas);
     }
 
     public void GoToTitle()
     {
-        logo.gameObject.SetActive(false);
-        //bg.gameObject.SetActive(true);
+        HideAllContainer();
         titleContainer.SetActive(true);
-        //AudioClip bgv = (AudioClip)Resources.Load("BGM/bgmTitle");
-        //titleAudioSource.clip = bgv;
-        //titleAudioSource.Play();
+        PlayTitleBGM();
     }
 
     public void NewGame()
     {
-        titleContainer.SetActive(false);
-        titleAudioSource.Stop();
+        HideContainer(titleContainer);
         logo.SetActive(false);
-        //ChapterController._instance.lineContainer.SetActive(true);
         skipContainer.SetActive(true);
     }
 
@@ -150,136 +159,119 @@ public class GameController : MonoBehaviour
     /// 从文件中获取存档的信息
     /// </summary>
     /// <returns></returns>
-    private List<SavedDataModel> LoadSavedDatas()
+    /// 
+    private void LoadDatas<T>(string fileName, T data)
     {
         if (!Directory.Exists(savedDatasPath))
         {
             Directory.CreateDirectory(savedDatasPath);
         }
         //使用using可在结束后销毁using括号内生成的资源变量
-        using (FileStream fs = new FileStream(savedDatasPath + savedDatasFile, FileMode.OpenOrCreate)) //文件不存在直接创建
+        using (FileStream fs = new FileStream(savedDatasPath + fileName, FileMode.OpenOrCreate)) //文件不存在直接创建
         {
             //读取文件内的所以内容，转换为SavedDataModel
             using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
             {
                 string savedDataJson = sr.ReadToEnd();
-                if (null == savedDatas) savedDatas = InitList<SavedDataModel>(10);
                 if (!string.IsNullOrEmpty(savedDataJson))
                 {
-                    JArray savedDataArray = JArray.Parse(savedDataJson);
-                    foreach (JToken jSavedData in savedDataArray)    //JToken为JObject的基类，用来遍历较好
+                    if (data.GetType() == typeof(List<SavedDataModel>))
                     {
-                        if (null != jSavedData && jSavedData.Type != JTokenType.Null)
+                        JArray savedDataArray = JArray.Parse(savedDataJson);
+                        foreach (JToken jSavedData in savedDataArray)    //JToken为JObject的基类，用来遍历较好
                         {
                             SavedDataModel savedData = JsonConvert.DeserializeObject<SavedDataModel>(jSavedData.ToString());//反序列化Json
-                            savedDatas[savedData.savedDataIndex] = savedData;
+                            savedDatas.Add(savedData);
+
                         }
                     }
-                    Debug.Log(savedDatas[0].ToString());
-                    return savedDatas;
-                }
-
-            }
-        }
-        return savedDatas = InitList<SavedDataModel>(10);
-    }
-
-    //快存文件的读取,先直接复制黏贴， 之后应该抽象一下
-    private SavedDataModel LoadQuickSaveData()
-    {
-        if (!Directory.Exists(savedDatasPath))
-        {
-            Directory.CreateDirectory(savedDatasPath);
-        }
-        //使用using可在结束后销毁using括号内生成的资源变量
-        using (FileStream fs = new FileStream(savedDatasPath + qSavedDataFile, FileMode.OpenOrCreate)) //文件不存在直接创建
-        {
-            //读取文件内的所以内容，转换为SavedDataModel
-            using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
-            {
-                string savedDataJson = sr.ReadToEnd();
-                if (null == qSavedData) qSavedData = new SavedDataModel();
-                if (!string.IsNullOrEmpty(savedDataJson))
-                {
-                    JToken jSavedData = JToken.Parse(savedDataJson);
+                    else
+                    {
+                        JToken jSavedData = JToken.Parse(savedDataJson);
                         if (null != jSavedData && jSavedData.Type != JTokenType.Null)
                         {
-                            SavedDataModel savedData = JsonConvert.DeserializeObject<SavedDataModel>(jSavedData.ToString());//反序列化Json
-                            qSavedData = savedData;
+                            if (data.GetType() == typeof(SettingModel))
+                            {
+                                settingDatas = JsonConvert.DeserializeObject<SettingModel>(jSavedData.ToString());//反序列化Json
+                            }else if (data.GetType() == typeof(SavedDataModel))
+                            {
+                                qSavedData = JsonConvert.DeserializeObject<SavedDataModel>(jSavedData.ToString());//反序列化Json
+                            }
                         }
-                    return qSavedData;
-                }
-
-            }
-        }
-        return qSavedData = new SavedDataModel();
-    }
-
-    //配置文件的读取,先直接复制黏贴， 之后应该抽象一下
-    private SavedDataModel LoadSettingDatas()
-    {
-        if (!Directory.Exists(savedDatasPath))
-        {
-            Directory.CreateDirectory(savedDatasPath);
-        }
-        //使用using可在结束后销毁using括号内生成的资源变量
-        using (FileStream fs = new FileStream(savedDatasPath + settingDataFile, FileMode.OpenOrCreate)) //文件不存在直接创建
-        {
-            //读取文件内的所以内容，转换为SavedDataModel
-            using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
-            {
-                string settingDataJson = sr.ReadToEnd();
-                if (null == settingDatas) settingDatas = new SettingModel();
-                if (!string.IsNullOrEmpty(settingDataJson))
-                {
-                    JToken jSettingData = JToken.Parse(settingDataJson);
-                    if (null != jSettingData && jSettingData.Type != JTokenType.Null)
-                    {
-                        SettingModel settingData = JsonConvert.DeserializeObject<SettingModel>(jSettingData.ToString());//反序列化Json
-                        settingDatas = settingData;
                     }
-                    return qSavedData;
                 }
-
+                else
+                {
+                    InitData<T>(data);
+                }
             }
         }
-        return qSavedData = new SavedDataModel();
     }
 
-    /// <summary>
-    /// 将存储数据存入本地
-    /// </summary>
-    public void SaveSettingDatas()
+    private void InitData<T>(T data)
     {
-        if (!Directory.Exists(savedDatasPath))
+        if(data.GetType() == typeof(SettingModel))
         {
-            Directory.CreateDirectory(savedDatasPath);
+            settingDatas = new SettingModel();
+            settingDatas.cgSavedData = zeroCGArray;
+            settingDatas.memoryIndex = 0;
+            settingDatas.SEVolume = 0.5f;
+            settingDatas.HSEVolume = 0.5f;
+            settingDatas.BGMVolume = 0.5f;
+            settingDatas.BGVVolume = 0.5f;
+            settingDatas.dialogSpeed = 0.2f;
+            settingDatas.skipSpeed = 0.2f;
+            settingDatas.charactersVolume = new float[] { 0.5f, 0.5f, 0.5f, 0.5f };
+            settingDatas.dialogTransparent = 0.5f;
+            settingDatas.noClothes = false;
+            settingDatas.isSkipReadedContext = false;
+            settingDatas.isSkipUntilHScene = true;
+            settingDatas.isSkipUntilShoot = true;
+            settingDatas.shootNumber = 5;
+            settingDatas.chapterIndex = 0;
+            settingDatas.maxDialogIndex = 0;
+            settingDatas.isContinuePlayCV = false;
+            settingDatas.isChangeReadedTextColor = false;
+            settingDatas.rightFunction = 1;
+            settingDatas.shootChoices = 3;
+            Debug.Log("cgdata: " + settingDatas.cgSavedData);
         }
-        using (StreamWriter w = new StreamWriter(savedDatasPath + settingDataFile, false, Encoding.UTF8))
+        else if (data.GetType() == typeof(SavedDataModel))
         {
-            string settingDataJson = JsonConvert.SerializeObject(settingDatas);
-            w.Write(settingDataJson);
+            qSavedData.savedDataIndex = 0;
+            qSavedData.chapterIndex = 0;
+            qSavedData.dialogInedx = 0;
         }
+        else if (data.GetType() == typeof(List<SavedDataModel>))
+        {
+            Debug.Log("InitList");
+            InitDataList(10);
+        }
+
     }
 
-    public List<T> InitList<T>(int size)
+
+    public void InitDataList(int size)
     {
-        List<T> newList = new List<T>();
         if (size > 0)
         {
-            for (int i = 0; i < size; i++)
+            for (int i = 1; i <= size; i++)
             {
-                newList.Add(default(T));
+                SavedDataModel tempData = new SavedDataModel();
+                tempData.chapterIndex = 0;
+                tempData.dialogInedx = 0;
+                tempData.savedTime = DateTime.Now;
+                tempData.savedDataIndex = i;
+                savedDatas.Add(tempData);
             }
         }
-        return newList;
     }
 
+    //显示s/l界面，并根据传入值判断是s还是l
     public void ShowSavedDataPanel(bool isLoadBtn)
     {
-        titleAudioSource.Stop();
         isLoadPanel = isLoadBtn;
-
+        ChapterController._instance.chapterMode = false;
         //隐藏一些页面，之后应该做成方法
         //hideContainers();
 
@@ -288,7 +280,7 @@ public class GameController : MonoBehaviour
         for(int i=0; i<savedDatas.Count; i++)
         {
             Button savedBtn = savedDataPanel.transform.Find(string.Format("SavedField{0}", i)).GetComponent<Button>();
-            if (null != savedDatas[i])
+            if (null != savedDatas[i] && !(savedDatas[i].dialogInedx == 0))
             {
                 //savedBtn.transform.Find("SavedPic").GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("SavedData/{0}", savedDatas[i].savedPicName));
                 savedBtn.transform.Find("Date").GetComponent<Text>().text = savedDatas[i].savedTime.ToString();
@@ -302,139 +294,71 @@ public class GameController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Load界面大部分与SAVE相同，先直接用SAVE页面，但是需要一个标志位来确定S/L
-    /// </summary>
-    public void ShowLoadDataPanel()
-    {
-        ShowSavedDataPanel(true);
-    }
-
+    //点击s/l的按钮，根据index与s/l模式进行处理
     public void LoadAndShowDialog(int savedDataIndex)
     {
         if (isLoadPanel)
         {
-            if (null != savedDatas[savedDataIndex])
+            if (null != savedDatas[savedDataIndex] && !(savedDatas[savedDataIndex].dialogInedx == 0))
             {
-                int sceneIndex = savedDatas[savedDataIndex].sceneIndex;
+                if (titleContainer.activeInHierarchy)
+                {
+                    HideContainer(titleContainer);
+                }
+                int dialogInedx = savedDatas[savedDataIndex].dialogInedx;
                 int chapterIndex = savedDatas[savedDataIndex].chapterIndex;
                 ChapterController._instance.bgmAudioSource.Stop();
                 ChapterController._instance.bgvAudioSource.Stop();
                 ChapterController._instance.LoadXlsFile(chapterIndex);
-                ChapterController._instance.dialogIndex = sceneIndex;
+                ChapterController._instance.dialogIndex = dialogInedx;
                 ChapterController._instance.GetNextDialog();
             }
         }
         else
         {
-            //这串逻辑为当按下存档按钮时的操作，由于之前截屏图片通过改名后关联到Btn不能立即显示
-            if (null != savedDatas[savedDataIndex])
-            {
-                string tmpPicName = savedDatas[savedDataIndex].savedPicName;
-                if (File.Exists(savedDatasPath + tmpPicName))
-                {
-                    File.Delete(savedDatasPath + tmpPicName);
-                }
-                if (File.Exists(savedDatasPath + tmpPicName + ".meta"))
-                {
-                    File.Delete(savedDatasPath + tmpPicName + ".meta");
-                }
-            }
             savedDatas[savedDataIndex] = ChapterController._instance.GetCurrentData();
             savedDatas[savedDataIndex].savedDataIndex = savedDataIndex;
-            savedDatas[savedDataIndex].savedPicName = ChapterController._instance.screenPicName;
-            savedDatas[savedDataIndex].chapterIndex = ChapterController._instance.chapterIndex;
-            SaveDatas(savedDataIndex);
-            //在save的时候存储最新的文本序列号。1.章节号大于setting，2.章节相同，dialogIndex大于setting,已在getnextdialog中做
-            //if ((ChapterController._instance.chapterIndex > settingDatas.chapterIndex) || 
-            //    ((ChapterController._instance.chapterIndex == settingDatas.chapterIndex) && (ChapterController._instance.dialogIndex > settingDatas.maxDialogIndex)))
-            //{
-            //    settingDatas.chapterIndex = ChapterController._instance.chapterIndex;
-            //    settingDatas.maxDialogIndex = ChapterController._instance.dialogIndex;
-            //    SaveSettingDatas();
-            //}
+            SaveDatas<List<SavedDataModel>>(savedDatasFile, savedDatas);
         }
-    }
-
-    public void hideContainers()
-    {
-        //TODO:也许可以根据传进来的参数，动态隐藏其他的Containers
-        titleContainer.SetActive(false);
-        savedDataPanel.SetActive(false);
-
-        ChapterController._instance.background.SetActive(false);
-        ChapterController._instance.rolesContainer.SetActive(false);
-        ChapterController._instance.lineContainer.SetActive(false);
-        ChapterController._instance.optionPanel.SetActive(false);
-        ChapterController._instance.background.SetActive(false);
+        HideContainer(savedDataPanel);
     }
 
     /// <summary>
     /// 将存储数据存入本地
     /// </summary>
-    public void SaveDatas(int savedDataIndex)
+    public void SaveDatas<T>(string fileName, T datas)
     {
         if (!Directory.Exists(savedDatasPath))
         {
             Directory.CreateDirectory(savedDatasPath);
         }
-        using (StreamWriter w = new StreamWriter(savedDatasPath + savedDatasFile, false, Encoding.UTF8))
+        using (StreamWriter w = new StreamWriter(savedDatasPath + fileName, false, Encoding.UTF8))
         {
-            // TODO: This convertion will fail as the SavedDataModel contains
-            //savedDatas[savedDataIndex].sceneIndex = ChapterController._instance.dialogIndex - 1;
-            string savedDataJson = JsonConvert.SerializeObject(savedDatas);
-            Debug.Log(savedDataJson);
+            string savedDataJson = JsonConvert.SerializeObject(datas);
             w.Write(savedDataJson);
         }
-
-        //将截屏的Png更名为可被savedata使用的格式
-        //if (File.Exists(linePath + "ScreenShot.png"))
-        //{
-        //    if(File.Exists(linePath + string.Format("savedImage{0}.png", savedDataIndex)))
-        //    {
-        //        File.Delete(string.Format(linePath + "savedImage{0}.png", savedDataIndex));
-        //        string.Format(linePath + "savedImage{0}.png.meta", savedDataIndex);
-        //    }
-        //    File.Move(linePath + "ScreenShot.png", string.Format(linePath + "savedImage{0}.png", savedDataIndex));
-        //}
-
-        //重新加载页面以显示新的存档
-        savedDataPanel.SetActive(false);
-        ChapterController._instance.isSavedData = true;
-        ChapterController._instance.screenPicName = ChapterController._instance.SetScreenPicName();
     }
 
     public void SetQuickSavedData()
     {
-        if (!Directory.Exists(savedDatasPath))
-        {
-            Directory.CreateDirectory(savedDatasPath);
-        }
-        using (StreamWriter w = new StreamWriter(savedDatasPath + qSavedDataFile, false, Encoding.UTF8))
-        {
-            // TODO: This convertion will fail as the SavedDataModel contains
-            //qSavedData.sceneIndex = ChapterController._instance.dialogIndex - 1;
-            //qSavedData.savedTime = time
-            qSavedData = ChapterController._instance.GetCurrentData();
-            string savedDataJson = JsonConvert.SerializeObject(qSavedData);
-            w.Write(savedDataJson);
-        }
+        qSavedData = ChapterController._instance.GetCurrentData();
+        SaveDatas<SavedDataModel>(qSavedDataFile, qSavedData);
     }
 
     public void LoadQuickSavedData()
     {
-        if(null != qSavedData)
+        if(null != qSavedData && !(qSavedData.dialogInedx == 0))
         {
-            int sceneIndex = qSavedData.sceneIndex;
-            ChapterController._instance.dialogIndex = sceneIndex;
+            int dialogInedx = qSavedData.dialogInedx;
+            ChapterController._instance.dialogIndex = dialogInedx;
             ChapterController._instance.GetNextDialog();
         }
     }
 
-    public void CloseSavedDataPanel()
-    {
-        savedDataPanel.SetActive(false);
-    }
+    //public void CloseSavedDataPanel()
+    //{
+    //    savedDataPanel.SetActive(false);
+    //}
 
     public void LinkBtn()
     {
@@ -444,7 +368,7 @@ public class GameController : MonoBehaviour
 
     public void ShowExtraPanel()
     {
-        titleAudioSource.Stop();
+        HideContainer(titleContainer);
         extraContainer.SetActive(true);
     }
 
@@ -494,6 +418,7 @@ public class GameController : MonoBehaviour
 
     public void ShowCGDetail(int cgIndex)
     {
+        cgMode = true;
         cgDetailArrayList = new ArrayList();
         
         for(int i=0; i<cgArray.Length; i++)
@@ -510,15 +435,15 @@ public class GameController : MonoBehaviour
         if (!cgDetailArrayList[0].Equals("0"))
         {
             cgDetail.SetActive(true);
-            Button detailBtn = cgDetail.transform.Find("Detail").GetComponent<Button>();
-            detailBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("Image/Mode/CG/ev{0}", cgDetailArrayList[0]));
+            Image cgImage = cgDetail.transform.Find("CGImage").GetComponent<Image>();
+            cgImage.sprite = Resources.Load<Sprite>(string.Format("Image/Mode/CG/ev{0}", cgDetailArrayList[0]));
             cgDetailArrayList.RemoveAt(0);
         }
-        //currentCGIndex = c[cgArray];
     }
 
     public void AnalyzeCGArray(string array)
     {
+        Debug.Log(array);
         string[] data = array.Split(';');
         cgArray = new string[data.Length][];
         for (int i = 0; i < data.Length; i++)
@@ -562,8 +487,8 @@ public class GameController : MonoBehaviour
     {
         if (cgDetailArrayList.Count > 0)
         {
-            Button detailBtn = cgDetail.transform.Find("Detail").GetComponent<Button>();
-            detailBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("Image/Mode/CG/ev{0}", cgDetailArrayList[0]));
+            Image cgImage = cgDetail.transform.Find("CGImage").GetComponent<Image>();
+            cgImage.sprite = Resources.Load<Sprite>(string.Format("Image/Mode/CG/ev{0}", cgDetailArrayList[0]));
             cgDetailArrayList.RemoveAt(0);
         }
         else
@@ -582,14 +507,16 @@ public class GameController : MonoBehaviour
     {
         //settingDatas.cgIndex = 9;
         AnalyzeCGArray(fullCGArray);
-        SaveSettingDatas();
+        SaveDatas<SettingModel>(settingDataFile, settingDatas);
+        settingDatas.memoryIndex = 2;
     }
 
     public void ShowZeroCG()
     {
         //settingDatas.cgIndex = 0;
         AnalyzeCGArray(zeroCGArray);
-        SaveSettingDatas();
+        SaveDatas<SettingModel>(settingDataFile, settingDatas);
+        settingDatas.memoryIndex = 0;
     }
 
     public void ShowConfirmPannel()
@@ -610,51 +537,64 @@ public class GameController : MonoBehaviour
     public void ShowBGMPanel()
     {
         bgmPanel.SetActive(true);
-
     }
 
-    public void ExitBGMPanelBtn()
-    {
-        bgmPanel.SetActive(false);
-    }
+    //public void ExitBGMPanelBtn()
+    //{
+    //    bgmPanel.SetActive(false);
+    //    if (isPlayMusic)
+    //    {
+    //        isPlayMusic = false;
+    //        PlayTitleBGM();
+    //    }
+    //}
 
     public void PlayBGMBtn(string bgmName)
     {
-        AudioSource bgmSource = bgmPanel.transform.Find("BGM").GetComponent<AudioSource>();
         AudioClip bgm = (AudioClip)Resources.Load("BGM/" + bgmName);
+        bgmSource.clip = bgm;
+        bgmSource.Play();
+        //isPlayMusic = true;
+    }
+
+    private void PlayTitleBGM()
+    {
+        AudioClip bgm = (AudioClip)Resources.Load("BGM/bgmTitle");
         bgmSource.clip = bgm;
         bgmSource.Play();
     }
 
     public void StopBGMBtn()
     {
-        AudioSource bgmSource = bgmPanel.transform.Find("BGM").GetComponent<AudioSource>();
+        //isPlayMusic = false;
         bgmSource.Stop();
     }
 
     public void ShowSettingPanel()
     {
-        titleAudioSource.Stop();
+        ChapterController._instance.chapterMode = false;
+
         settingPannel.SetActive(true);
         ChangeSettingTab(1);
-        settingPannel.transform.Find("ComminSetting").Find("BGM").GetComponent<Slider>().value = settingDatas.BGMVolume;
-        settingPannel.transform.Find("ComminSetting").Find("BGV").GetComponent<Slider>().value = settingDatas.BGVVolume;
-        settingPannel.transform.Find("ComminSetting").Find("Voice").GetComponent<Slider>().value = settingDatas.VoiceVolume;
-        settingPannel.transform.Find("ComminSetting").Find("DialogSpeed").GetComponent<Slider>().value = settingDatas.dialogSpeed;
-        settingPannel.transform.Find("ComminSetting").Find("SkipSpeed").GetComponent<Slider>().value = settingDatas.skipSpeed;
-        settingPannel.transform.Find("ComminSetting").Find("Screen").Find("Dialog").Find("DialogTransparent").GetComponent<Slider>().value = settingDatas.dialogTransparent;
-        settingPannel.transform.Find("CharactersCVSetting").Find("FirstVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[0];
-        settingPannel.transform.Find("CharactersCVSetting").Find("SecondVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[1];
-        settingPannel.transform.Find("CharactersCVSetting").Find("ThirdVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[2];
-        settingPannel.transform.Find("CharactersCVSetting").Find("FourthVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[3];
+        settingPannel.transform.Find("SoundSetting").Find("BGM").GetComponent<Slider>().value = settingDatas.BGMVolume;
+        settingPannel.transform.Find("SoundSetting").Find("BGV").GetComponent<Slider>().value = settingDatas.BGVVolume;
+        settingPannel.transform.Find("SoundSetting").Find("SE").GetComponent<Slider>().value = settingDatas.SEVolume;
+        settingPannel.transform.Find("SoundSetting").Find("HSE").GetComponent<Slider>().value = settingDatas.HSEVolume;
+        settingPannel.transform.Find("TextSetting").Find("DialogSpeed").GetComponent<Slider>().value = settingDatas.dialogSpeed;
+        settingPannel.transform.Find("TextSetting").Find("SkipSpeed").GetComponent<Slider>().value = settingDatas.skipSpeed;
+        settingPannel.transform.Find("GraphicSetting").Find("Screen").Find("Dialog").Find("DialogTransparent").GetComponent<Slider>().value = settingDatas.dialogTransparent;
+        settingPannel.transform.Find("SoundSetting").Find("FirstVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[0];
+        settingPannel.transform.Find("SoundSetting").Find("SecondVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[1];
+        settingPannel.transform.Find("SoundSetting").Find("ThirdVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[2];
+        settingPannel.transform.Find("SoundSetting").Find("FourthVoice").GetComponent<Slider>().value = settingDatas.charactersVolume[3];
     }
 
     public void ExitSettingPannel()
     {
-        settingPannel.SetActive(false);
         settingDatas.BGMVolume = ChapterController._instance.bgmAudioSource.volume;
         settingDatas.BGVVolume = ChapterController._instance.bgvAudioSource.volume;
-        settingDatas.VoiceVolume = ChapterController._instance.cvAudioSource.volume;
+        settingDatas.SEVolume = ChapterController._instance.seAudioSource.volume;
+        settingDatas.HSEVolume = ChapterController._instance.hseAudioSource.volume;
         settingDatas.dialogSpeed = 0.35f - ChapterController._instance.dialogSpeed;
         settingDatas.skipSpeed = 0.35f - ChapterController._instance.skipSpeed;
         settingDatas.noClothes = ChapterController._instance.noClothes;
@@ -666,22 +606,18 @@ public class GameController : MonoBehaviour
         settingDatas.isSkipUntilShoot = ChapterController._instance.isSkipUntilShoot;
         settingDatas.shootNumber = ChapterController._instance.shootNumber;
         settingDatas.shootChoices = ChapterController._instance.shootChoice;
+        settingDatas.chapterIndex = ChapterController._instance.maxChapterIndex;
         settingDatas.cgSavedData = CGArrayToString();
-        SaveSettingDatas();
+        SaveDatas<SettingModel>(settingDataFile, settingDatas);
 
+        HideContainer(settingPannel);
         //如果设置了果体，并在章节内，重新Load一下角色图片以立即更新效果
         if (ChapterController._instance.chapterMode)
         {
-            ChapterController._instance.LoadRolePic(ChapterController._instance.dialogIndex - 1);//每次显示完，Index+1，所以在这里需要-1
+            ChapterController._instance.LoadRolePic(ChapterController._instance.dialogIndex - 1, false);//每次显示完，Index+1，所以在这里需要-1
             //如果设置了文本颜色，这里也及时改一下
-            if (settingDatas.isChangeReadedTextColor)
-            {
-                ChapterController._instance.ChangeReadedTextColor(true);
-            }
-            else
-            {
-                ChapterController._instance.ChangeReadedTextColor(false);
-            }
+            ChapterController._instance.ChangeReadedTextColor(settingDatas.isChangeReadedTextColor);
+
         }
     }
 
@@ -696,10 +632,12 @@ public class GameController : MonoBehaviour
             if (i <= showNum)
             {
                 memoryBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("Image/Mode/Memory/Memory{0}", i));
+                memoryBtn.enabled = true;
             }
             else
             {
                 memoryBtn.GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/Mode/CG/cgno");
+                memoryBtn.enabled = false;
             }
         }
     }
@@ -715,6 +653,7 @@ public class GameController : MonoBehaviour
         ChapterController._instance.chapterIndex = 1;
         memoryPanel.SetActive(false);
         extraContainer.SetActive(false);
+        bgmSource.Stop();
         ChapterController._instance.dialogIndex = memoryStartArray[index];
         ChapterController._instance.memoryEnd = memoryEndArray[index];
         ChapterController._instance.memoryMode = true;
@@ -753,12 +692,28 @@ public class GameController : MonoBehaviour
         switch (tabNum)
         {
             case 1:
-                settingPannel.transform.Find("ComminSetting").gameObject.SetActive(true);
-                settingPannel.transform.Find("CharactersCVSetting").gameObject.SetActive(false);
+                settingPannel.transform.Find("GraphicSetting").gameObject.SetActive(true);
+                settingPannel.transform.Find("SoundSetting").gameObject.SetActive(false);
+                settingPannel.transform.Find("TextSetting").gameObject.SetActive(false);
+                settingPannel.transform.Find("GameplaySetting").gameObject.SetActive(false);
                 break;
             case 2:
-                settingPannel.transform.Find("ComminSetting").gameObject.SetActive(false);
-                settingPannel.transform.Find("CharactersCVSetting").gameObject.SetActive(true);
+                settingPannel.transform.Find("GraphicSetting").gameObject.SetActive(false);
+                settingPannel.transform.Find("SoundSetting").gameObject.SetActive(true);
+                settingPannel.transform.Find("TextSetting").gameObject.SetActive(false);
+                settingPannel.transform.Find("GameplaySetting").gameObject.SetActive(false);
+                break;
+            case 3:
+                settingPannel.transform.Find("GraphicSetting").gameObject.SetActive(false);
+                settingPannel.transform.Find("SoundSetting").gameObject.SetActive(false);
+                settingPannel.transform.Find("TextSetting").gameObject.SetActive(true);
+                settingPannel.transform.Find("GameplaySetting").gameObject.SetActive(false);
+                break;
+            case 4:
+                settingPannel.transform.Find("GraphicSetting").gameObject.SetActive(false);
+                settingPannel.transform.Find("SoundSetting").gameObject.SetActive(false);
+                settingPannel.transform.Find("TextSetting").gameObject.SetActive(false);
+                settingPannel.transform.Find("GameplaySetting").gameObject.SetActive(true);
                 break;
         }
     }
@@ -782,5 +737,32 @@ public class GameController : MonoBehaviour
     public void SetShootChoices(int choice)
     {
         ChapterController._instance.shootChoice = choice;
+    }
+
+    public void HideContainer(GameObject container)
+    {
+        container.SetActive(false);
+        if (ChapterController._instance.chapterContainer.activeInHierarchy)
+        {
+            ChapterController._instance.chapterMode = true;
+        }
+        if (!titleContainer.activeInHierarchy)
+        {
+            bgmSource.Stop();
+        }
+    }
+
+    private void HideAllContainer()
+    {
+        logo.gameObject.SetActive(false);
+        savedDataPanel.SetActive(false);
+        extraContainer.SetActive(false);
+        cgPanel.SetActive(false);
+        cgDetail.SetActive(false);
+        bgmPanel.SetActive(false);
+        confirmPanel.SetActive(false);
+        settingPannel.SetActive(false);
+        memoryPanel.SetActive(false);
+
     }
 }

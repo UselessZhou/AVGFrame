@@ -13,9 +13,9 @@ namespace Asserts.Scripts.Model
     {
         public int savedDataIndex;  //存储序号
         public int chapterIndex;    //跳转的章节号
-        public int sceneIndex;      //跳转幕的序号
+        public int dialogInedx;      //跳转幕的序号
         public DateTime savedTime;
-        public string savedPicName; //存储关联的截图png文件名
+        //public string savedPicName; //存储关联的截图png文件名
     }
 }
 

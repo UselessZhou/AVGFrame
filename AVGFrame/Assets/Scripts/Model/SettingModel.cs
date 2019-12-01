@@ -9,7 +9,8 @@ namespace Asserts.Scripts.Model
     {
         public string cgSavedData; //CG解锁情况
         public int memoryIndex; //Memory解锁个数
-        public float VoiceVolume;   //CV声音
+        public float SEVolume;
+        public float HSEVolume;
         public float BGMVolume;     //BGM声音
         public float BGVVolume;     //BGV声音
         public float dialogSpeed;   //文本速度

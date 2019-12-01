@@ -15,12 +15,15 @@ using UnityEngine.EventSystems;
 public class ChapterController : MonoBehaviour
 {
     public static ChapterController _instance;
-    
-    public GameObject background;
-    public GameObject rolesContainer;
+
+    public GameObject chapterContainer;
     public GameObject lineContainer;
-    public GameObject audioContainer;
-    public GameObject optionPanel;
+    private GameObject background;
+    private GameObject rolesContainer;
+    private GameObject audioContainer;
+    private GameObject optionPanel;
+    private GameObject topMenu;
+    private GameObject shootChoiceContainer;
 
     private static string rootPath; //根目录
     private static string chapterPath; //剧本目录
@@ -43,7 +46,7 @@ public class ChapterController : MonoBehaviour
     private GameObject rightRolePic;
 
     public string screenPicName;
-    public bool isSavedData;
+    //public bool isSavedData;何用？？？？
 
     //private AudioClip cvAudio;
     public AudioSource cvAudioSource;
@@ -52,6 +55,8 @@ public class ChapterController : MonoBehaviour
     //private AudioClip bgvAudio;
     public AudioSource bgvAudioSource;
     public AudioSource bgmAudioSource;
+    public AudioSource seAudioSource;
+    public AudioSource hseAudioSource;
 
     private char[] ca;
     private bool showLineTexting;
@@ -63,7 +68,8 @@ public class ChapterController : MonoBehaviour
     public float skipSpeed;     //skip文本速度
     public bool isSkipUntilHScene;
     public bool isSkipUntilShoot;
-
+    private bool isChooseMode;//选择模式
+    Image shootNumImage;    //shoot倒计时图片
 
     public float dialogSpeed;  //文本显示速度
 
@@ -71,12 +77,13 @@ public class ChapterController : MonoBehaviour
     public int memoryEnd;       //记录memory结束点
 
     public int chapterIndex;    //章节号
+    public int maxChapterIndex; //最大章节
 
     public bool chapterMode;    //进入章节模式，可用一些ctrl之类的快捷键
 
-    public GameObject endPanel;
+    private GameObject endPanel;
 
-    public Image blackMask;          //转场遮罩层
+    private Image transitionPic;          //转场图片
     private bool isTransition;
     private float timeVal;      //设置转场时间
 
@@ -92,13 +99,13 @@ public class ChapterController : MonoBehaviour
     //人物晃动
     private bool isMoveAction;
     private bool isMoveFinish;
-    private Image moveRoleImage;
+    //private Image moveRoleImage;
+    private GameObject moveRoleImage;
     public Vector3 moveRoleInitPos;
 
     public bool noClothes;
 
     public bool isShowTopMenu;  //显示顶部Menu
-    public GameObject topMenu;
 
     private Button voiceBtn;    //底部重新播放CV的btn
 
@@ -119,13 +126,24 @@ public class ChapterController : MonoBehaviour
     public int shootChoice;     //sj选择
 
     private string tempCGPic;   //根据sj选择，显示的CG
-    public GameObject shootChoiceContainer;
 
     public GameObject displayCanvas;
 
     // Start is called before the first frame update
     void Start()
     {
+        chapterContainer = displayCanvas.transform.Find("ChapterContainer").gameObject;
+        background = chapterContainer.transform.Find("Background").gameObject;
+        rolesContainer = chapterContainer.transform.Find("RolesContainer").gameObject;
+        lineContainer = chapterContainer.transform.Find("LineContainer").gameObject;
+        optionPanel = chapterContainer.transform.Find("OptionPanel").gameObject;
+        topMenu = chapterContainer.transform.Find("TopMenu").gameObject;
+        endPanel = chapterContainer.transform.Find("EndPanel").gameObject;
+        transitionPic = chapterContainer.transform.Find("TransitionPic").GetComponent<Image>();
+        shootChoiceContainer = chapterContainer.transform.Find("ShootChoiceContainer").gameObject;
+        shootNumImage = background.transform.Find("shootNum").GetComponent<Image>();
+
+
         line = lineContainer.transform.Find("Line").GetComponent<Text>();
         roleName = lineContainer.transform.Find("RoleName").GetComponent<Text>();
         rightRole = rolesContainer.transform.Find("RightRole").gameObject;
@@ -145,6 +163,7 @@ public class ChapterController : MonoBehaviour
         isSkipUntilShoot = GameController._instance.settingDatas.isSkipUntilShoot;
         shootNumber = GameController._instance.settingDatas.shootNumber;
         shootChoice = GameController._instance.settingDatas.shootChoices;
+        maxChapterIndex = GameController._instance.settingDatas.chapterIndex;
     }
 
     private void Awake()
@@ -172,7 +191,7 @@ public class ChapterController : MonoBehaviour
             AutoPlay();
         }
 
-        if (chapterMode)
+        if (chapterMode && !isChooseMode)
         {
             if (Input.GetKeyDown(KeyCode.LeftControl))
             {
@@ -192,7 +211,7 @@ public class ChapterController : MonoBehaviour
             {
                 if (!lineContainer.activeInHierarchy)
                 {
-                    lineContainer.SetActive(true);
+                    ShowLineContainer();
                 }
                 else
                 {
@@ -202,7 +221,7 @@ public class ChapterController : MonoBehaviour
             }
 
             //鼠标左键功能
-            if(Input.GetMouseButtonDown(0))
+            if(Input.GetMouseButtonDown(0) && !isTransition)
             {
                 GameObject hitUIObject = null;
 
@@ -215,7 +234,7 @@ public class ChapterController : MonoBehaviour
                 {
                     if (!lineContainer.activeInHierarchy && !reviewDialogPanel.activeInHierarchy)
                     {
-                        lineContainer.SetActive(true);
+                        ShowLineContainer();
                     }
                     else if (lineContainer.activeInHierarchy && !backDialogMode)
                     {
@@ -238,14 +257,14 @@ public class ChapterController : MonoBehaviour
             }
 
             //鼠标右键功能
-            if (Input.GetMouseButtonDown(1))
+            if (Input.GetMouseButtonDown(1) && !isTransition)
             {
                 switch (rightFunction)
                 {
                     case 1://隐藏对话框
                         if (!lineContainer.activeInHierarchy)
                         {
-                            lineContainer.SetActive(true);
+                            ShowLineContainer();
                         }
                         else
                         {
@@ -281,73 +300,85 @@ public class ChapterController : MonoBehaviour
                 }
 
             }
+
+            //滚轮重播之前的剧本
+            if (!reviewDialogPanel.activeInHierarchy && Input.GetAxis("Mouse ScrollWheel") < 0)
+            {
+                if (tempMaxIndex > dialogIndex)
+                {
+                    GetBackDialog(false);
+                }
+                else
+                {
+                    backDialogMode = false;
+                    GetNextDialog();
+                }
+            }
+            if (!reviewDialogPanel.activeInHierarchy && Input.GetAxis("Mouse ScrollWheel") > 0)
+            {
+                backDialogMode = true;
+                GetBackDialog(true);
+            }
+
+            //镜头晃动
+            if (animationAction)
+            {
+                if (shake > 0)
+                {
+                    shake -= Time.deltaTime * 1.0f;
+                    mainCamera.rect = new Rect(shakeDelta * (-1.0f + shakeLevel * UnityEngine.Random.value),
+                                    shakeDelta * (-1.0f + shakeLevel * UnityEngine.Random.value), 1.0f, 1.0f);
+                }
+                else
+                {
+                    shake = 0f;
+                    mainCamera.rect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
+                    animationAction = false;
+                }
+            }
+            //设置转场
+            if (isTransition)
+            {
+                if (timeVal >= 0.5f)
+                {
+                    isTransition = false;
+                    timeVal = 0;
+                    transitionPic.gameObject.SetActive(false);
+                    GetNextDialog();
+                }
+                else
+                {
+                    timeVal += Time.deltaTime;
+                }
+            }
+        }
+        else
+        {
+            animationAction = false;
+            isSkipDialog = false;
+            isAutoPlay = false;
+            isTransition = false;
         }
         
-
-        if (isTransition)
-        {
-            if(timeVal >= 0.5f)
-            {
-                isTransition = false;
-                timeVal = 0;
-                GetNextDialog();
-            }
-            else
-            {
-                timeVal += Time.deltaTime;
-            }
-        }
         if (isMoveAction && !isMoveFinish)
         {
-            moveRoleImage.transform.Translate(-moveRoleImage.transform.right * 100 * 0.1f);
-            if (Mathf.Abs(moveRoleInitPos.x - moveRoleImage.transform.position.x) > 60)
+            //moveRoleImage.transform.Translate(-moveRoleImage.transform.right * 1 * 0.1f);
+            moveRoleImage.transform.position += Vector3.right * 10 * Time.deltaTime;
+            if (Mathf.Abs(moveRoleInitPos.x - moveRoleImage.transform.position.x) > 1)
             {
                 isMoveFinish = true;
             }
         }
         if (isMoveAction && isMoveFinish)
         {
-            moveRoleImage.transform.Translate(moveRoleImage.transform.right * 100 * 0.1f);
-            if (Mathf.Abs(moveRoleInitPos.x - moveRoleImage.transform.position.x) < 20)
+            moveRoleImage.transform.position -= Vector3.right * 10 * Time.deltaTime;
+            //moveRoleImage.transform.Translate(moveRoleImage.transform.right * 1 * 0.1f);
+            if (Mathf.Abs(moveRoleInitPos.x - moveRoleImage.transform.position.x) < 1)
             {
                 moveRoleImage.transform.position = moveRoleInitPos;
                 Debug.Log(moveRoleInitPos);
                 isMoveAction = false;
                 isMoveFinish = false;
-            }
-        }
-
-        //滚轮重播之前的剧本
-        if (!reviewDialogPanel.activeInHierarchy && Input.GetAxis("Mouse ScrollWheel") < 0)
-        {
-            if(tempMaxIndex > dialogIndex)
-            {
-                GetBackDialog(false);
-            }
-            else
-            {
-                backDialogMode = false;
-                GetNextDialog();
-            }
-        }
-        if(!reviewDialogPanel.activeInHierarchy && Input.GetAxis("Mouse ScrollWheel") > 0){
-            backDialogMode = true;
-            GetBackDialog(true);
-        }
-
-        if (animationAction)
-        {
-            if (shake > 0)
-            {
-                shake -= Time.deltaTime * 1.0f;
-                mainCamera.rect = new Rect(shakeDelta * (-1.0f + shakeLevel * UnityEngine.Random.value),
-                                shakeDelta * (-1.0f + shakeLevel * UnityEngine.Random.value), 1.0f, 1.0f);
-            }
-            else
-            {
-                shake = 0f;
-                mainCamera.rect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
-                animationAction = false;
             }
         }
         
@@ -361,7 +392,7 @@ public class ChapterController : MonoBehaviour
             //Debug.Log("Mouse: " +  Input.mousePosition.y + " Height: " + Screen.height + " Menu: " + topMenu.GetComponent<RectTransform>().sizeDelta.y);
             if (Input.mousePosition.y > Screen.height - topMenu.GetComponent<RectTransform>().sizeDelta.y && lineContainer.activeInHierarchy && !backDialogMode)
             {
-                topMenu.SetActive(true);
+                ShowTopMenu();
             }
             else
             {
@@ -409,15 +440,12 @@ public class ChapterController : MonoBehaviour
 
     public void GetNextDialog()
     {
+        //显示对话场景
+        chapterContainer.SetActive(true);
+        //退出回忆模式
         if (memoryMode && dialogIndex > memoryEnd)
         {
-            rolesContainer.SetActive(false);
-            lineContainer.SetActive(false);
-            GameController._instance.memoryPanel.SetActive(true);
-            memoryMode = false;
-            chapterMode = false;
-            bgvAudioSource.Stop();
-            cvAudioSource.Stop();
+            ExitMemoryMode();
             return;
         }
         //如果正在播放动画，则停止
@@ -426,10 +454,15 @@ public class ChapterController : MonoBehaviour
             shake = -1.0f;
         }
 
-        //更新最大已读序列
-        if ((chapterIndex >= GameController._instance.settingDatas.chapterIndex) && (dialogIndex > GameController._instance.settingDatas.maxDialogIndex))
+        //更新最大已读序列与最大chapter
+        if (chapterIndex >= maxChapterIndex)
         {
-            GameController._instance.settingDatas.maxDialogIndex = dialogIndex;
+            maxChapterIndex = chapterIndex;
+            if(dialogIndex > GameController._instance.settingDatas.maxDialogIndex)
+            {
+                GameController._instance.settingDatas.maxDialogIndex = dialogIndex;
+            }
+
         }
 
         //如果正在协程显示文字，直接关闭协程。
@@ -448,15 +481,18 @@ public class ChapterController : MonoBehaviour
         //    return;
         //}
 
-
+        //先将voice按钮隐藏，待类型是dialog再显示
         voiceBtn.gameObject.SetActive(false);
+        //根据设定判断是否需要中断CV
         if (!isContinuePlayCV)
         {
             cvAudioSource.Stop();
         }
         
+        //判断目前的dialog是否小于剧本的最大长度 以及剧本列数是否正确
         if (dialogIndex < dialogArray.Length && dialogArray[dialogIndex].Length == 15)
         {
+            chapterMode = true;
             tempMaxIndex = dialogIndex;
             string dialogType = dialogArray[dialogIndex][1];
             if (dialogType.Equals("Animation"))
@@ -466,18 +502,20 @@ public class ChapterController : MonoBehaviour
                 dialogIndex++;
                 return;
             }
+            //当选择skip至H，并且剧本标识此index开始为h，将skip功能停止
             if(isSkipUntilHScene && null != dialogArray[dialogIndex][13] && dialogArray[dialogIndex][13].Equals("on"))
             {
                 isSkipDialog = false;
             }
 
+            //根据配置的shoot数在场景中显示
             if(!dialogArray[dialogIndex][14].Equals("") && int.Parse(dialogArray[dialogIndex][14]) <= shootNumber)
             {
-                if(isSkipUntilShoot && int.Parse(dialogArray[dialogIndex][14]) == shootNumber)
+                //当选择skip至shoot，停止shoot
+                if (isSkipUntilShoot && int.Parse(dialogArray[dialogIndex][14]) == shootNumber)
                 {
                     isSkipDialog = false;
                 }
-                Image shootNumImage = background.transform.Find("shootNum").GetComponent<Image>();
                 shootNumImage.sprite = Resources.Load<Sprite>("Image/ChapterBG/shoot" + dialogArray[dialogIndex][14]);
                 shootNumImage.gameObject.SetActive(true);
 
@@ -485,20 +523,22 @@ public class ChapterController : MonoBehaviour
                 if(int.Parse(dialogArray[dialogIndex][14]) == 1 && shootChoice == 3)
                 {
                     //选择框
+                    //shootChoiceContainer.SetActive(true);
+                    isChooseMode = true;
+                    isAutoPlay = false;
+                    isSkipDialog = false;
                     shootChoiceContainer.SetActive(true);
                 }
             }
             else
             {
-                background.transform.Find("shootNum").GetComponent<Image>().gameObject.SetActive(false);
+                shootNumImage.gameObject.SetActive(false);
             }
 
-            GameController._instance.hideContainers();
-            rolesContainer.SetActive(true);
-            isSavedData = true;
-            chapterMode = true;
             if (dialogType.Equals("End"))//故事结束
             {
+                //chapterContainer.SetActive(false);
+                chapterMode = false;
                 endPanel.SetActive(true);
             }
             else if (dialogType.Equals("Dialog") || dialogType.Equals("Aside") || dialogType.Equals("CG"))
@@ -516,7 +556,10 @@ public class ChapterController : MonoBehaviour
             {
                 //目前只有一种转场特效，不做判断
                 isTransition = true;
+                transitionPic.sprite = Resources.Load<Sprite>("Image/ChapterBG/loading");
+                transitionPic.gameObject.SetActive(true);
             }
+            //判断是否解锁memory，当剧本中的Index>setting内的值，更新memory值
             string memoryIndex = dialogArray[dialogIndex][11];
             if (!memoryIndex.Equals(""))
             {
@@ -524,7 +567,7 @@ public class ChapterController : MonoBehaviour
                 if (indexNum > GameController._instance.settingDatas.memoryIndex)
                 {
                     GameController._instance.settingDatas.memoryIndex = indexNum;
-                    GameController._instance.SaveSettingDatas();
+                    //GameController._instance.SaveSettingDatas();
                 }
             }
             dialogIndex++;
@@ -541,16 +584,14 @@ public class ChapterController : MonoBehaviour
     //显示下一个对话的具体内容
     private void SetDialogDetail()
     {
-        lineContainer.SetActive(true);
-        optionPanel.SetActive(false);
+        ShowLineContainer();
         string dialogContext = dialogArray[dialogIndex][2];
         string dialogScene = dialogArray[dialogIndex][3];
         string dialogRole = dialogArray[dialogIndex][4];
         string dialogAudio = dialogArray[dialogIndex][7];
         string bgmAudio = dialogArray[dialogIndex][9];
         string cgIndex = dialogArray[dialogIndex][10];
-        List<string> cgList = new List<string>();
-
+        
         if (backDialogMode)
         {
             line.color = Color.blue;
@@ -602,27 +643,7 @@ public class ChapterController : MonoBehaviour
             }
 
             //将CG加入解锁的CG数组中
-            int arrayIndex = int.Parse(cgIndex);
-            if(GameController._instance.cgArray[arrayIndex-1].Length == 1 & GameController._instance.cgArray[arrayIndex-1][0].Equals("0"))
-            {
-                GameController._instance.cgArray[arrayIndex-1][0] = cgName;
-            }
-            else
-            {
-                for(int i = 0; i < GameController._instance.cgArray[arrayIndex-1].Length; i++)
-                {
-                    if (GameController._instance.cgArray[arrayIndex-1][i].Equals(cgName))
-                    {
-                        break;
-                    }
-                    cgList.Add(GameController._instance.cgArray[arrayIndex-1][i]);
-                    if((i+1) == GameController._instance.cgArray[arrayIndex-1].Length)
-                    {
-                        cgList.Add(cgName);
-                        GameController._instance.cgArray[arrayIndex-1] = cgList.ToArray();
-                    }
-                }
-            }
+            AddCGToArray(cgIndex, cgName);
         }
         else
         {
@@ -631,36 +652,37 @@ public class ChapterController : MonoBehaviour
             if (!cgIndex.Equals(""))
             {
                 string[] arrayTemp = cgIndex.Split('_');
-                int arrayIndex = int.Parse(arrayTemp[0]);
-                if (GameController._instance.cgArray[arrayIndex-1].Length == 1 & GameController._instance.cgArray[arrayIndex-1][0].Equals("0"))
-                {
-                    GameController._instance.cgArray[arrayIndex-1][0] = cgIndex;
-                }
-                else
-                {
-                    for (int i = 0; i < GameController._instance.cgArray[arrayIndex-1].Length; i++)
-                    {
-                        if (GameController._instance.cgArray[arrayIndex-1][i].Equals(cgIndex))
-                        {
-                            break;
-                        }
-                        cgList.Add(GameController._instance.cgArray[arrayIndex-1][i]);
-                        if ((i + 1) == GameController._instance.cgArray[arrayIndex-1].Length)
-                        {
-                            cgList.Add(cgIndex);
-                            GameController._instance.cgArray[arrayIndex-1] = cgList.ToArray();
-                        }
-                    }
-                }
+                //将CG加入解锁的CG数组中
+                AddCGToArray(arrayTemp[0], cgIndex);
+                //int arrayIndex = int.Parse(arrayTemp[0]);
+                //if (GameController._instance.cgArray[arrayIndex-1].Length == 1 && GameController._instance.cgArray[arrayIndex-1][0].Equals("0"))
+                //{
+                //    GameController._instance.cgArray[arrayIndex-1][0] = cgIndex;
+                //}
+                //else
+                //{
+                //    for (int i = 0; i < GameController._instance.cgArray[arrayIndex-1].Length; i++)
+                //    {
+                //        if (GameController._instance.cgArray[arrayIndex-1][i].Equals(cgIndex))
+                //        {
+                //            break;
+                //        }
+                //        cgList.Add(GameController._instance.cgArray[arrayIndex-1][i]);
+                //        if ((i + 1) == GameController._instance.cgArray[arrayIndex-1].Length)
+                //        {
+                //            cgList.Add(cgIndex);
+                //            GameController._instance.cgArray[arrayIndex-1] = cgList.ToArray();
+                //        }
+                //    }
+                //}
             }
         }
-        background.SetActive(true);
+        //background.SetActive(true);
         roleName.text = dialogRole;
         leftRolePic.SetActive(false);
         centerRolePic.SetActive(false);
         rightRolePic.SetActive(false);
         bgvAudioSource.Stop();
-
         if (!bgmAudio.Equals("") && ! bgmAudio.Equals("off"))
         {
             AudioClip bgm = (AudioClip)Resources.Load("BGM/" + bgmAudio);
@@ -673,7 +695,7 @@ public class ChapterController : MonoBehaviour
 
         if (dialogArray[dialogIndex][1].Equals("Dialog"))
         {
-            LoadRolePic(dialogIndex);
+            LoadRolePic(dialogIndex, true);
             AudioClip voice = (AudioClip)Resources.Load("Audio/" + dialogAudio);
             //根据角色名字设置不同cv的声音大小
             if (dialogRole.Equals("粉"))
@@ -697,7 +719,6 @@ public class ChapterController : MonoBehaviour
             voiceBtn.gameObject.SetActive(true);
         }
         
-
         //CaptureScreen();//由于在saveBtn上做截屏的调用只能截取save页面的屏幕，暂时就每次加载dialog的时候都截取一张。
     }
 
@@ -710,6 +731,12 @@ public class ChapterController : MonoBehaviour
                 return;
             }
             dialogIndex--;
+            string tempType = dialogArray[dialogIndex][1];
+            if (tempType.Equals("Transition"))
+            {
+                dialogIndex++;
+                return;
+            }
         }
         else
         {
@@ -734,21 +761,11 @@ public class ChapterController : MonoBehaviour
             line.text = lineText;
             return;
         }
-        //暂时强制让BGV听完再能显示下一个dialog
-        //if (bgvAudioSource.isPlaying)
-        //{
-        //    isAutoPlay = false;
-        //    isSkipDialog = false;
-        //    return;
-        //}
-
 
         voiceBtn.gameObject.SetActive(false);
         cvAudioSource.Stop();
         lineContainer.transform.Find("BottomMenu").gameObject.SetActive(false);
         topMenu.SetActive(false);
-
-
         string dialogType = dialogArray[dialogIndex][1];
         if (dialogType.Equals("Animation"))
         {
@@ -760,9 +777,9 @@ public class ChapterController : MonoBehaviour
         {
             return;
         }
-        GameController._instance.hideContainers();
-        rolesContainer.SetActive(true);
-        isSavedData = true;
+        //GameController._instance.hideContainers();
+        //rolesContainer.SetActive(true);
+       // isSavedData = true;
         chapterMode = true;
         if (dialogType.Equals("Dialog") || dialogType.Equals("Aside"))
         {
@@ -779,9 +796,8 @@ public class ChapterController : MonoBehaviour
     private void SetOptionMenu()
     {
         //TODO:由于选项的个数并不固定，应该需要动态生成Button
-        lineContainer.SetActive(false);
-        rolesContainer.SetActive(false);
         optionPanel.SetActive(true);
+        isChooseMode = true;
         string[] optionContexts = dialogArray[dialogIndex][2].Split('/');
         string[] slipIndex = dialogArray[dialogIndex][3].Split('/');
         GameObject optionMenu = optionPanel.transform.Find("OptionMenu").gameObject;
@@ -792,16 +808,20 @@ public class ChapterController : MonoBehaviour
 
         BtnOne.onClick.AddListener(delegate ()
         {
+            HideContainer(optionPanel);
             dialogIndex = Convert.ToInt32(slipIndex[0]);
-            SetDialogDetail();
-            dialogIndex++;
+            GetNextDialog();
+            //SetDialogDetail();
+            //dialogIndex++;
         });
 
         BtnTwo.onClick.AddListener(delegate ()
         {
+            HideContainer(optionPanel);
             dialogIndex = Convert.ToInt32(slipIndex[1]);
-            SetDialogDetail();
-            dialogIndex++;
+            GetNextDialog();
+            //SetDialogDetail();
+            //dialogIndex++;
         });
     }
 
@@ -822,7 +842,7 @@ public class ChapterController : MonoBehaviour
         rolesContainer.SetActive(false);
         //line.text = "";
         roleName.text = "";
-        lineContainer.SetActive(true);
+        ShowLineContainer();
         string cg = dialogArray[dialogIndex][3];
         background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/Mode/CG/" + cg);
         background.SetActive(true);
@@ -853,8 +873,10 @@ public class ChapterController : MonoBehaviour
     public SavedDataModel GetCurrentData()
     {
         SavedDataModel tmpData = new SavedDataModel();
-        tmpData.sceneIndex = dialogIndex - 1;
+        tmpData.dialogInedx = dialogIndex - 1;
         tmpData.savedTime = DateTime.Now;
+        tmpData.chapterIndex = chapterIndex;
+        //tmpData.savedPicName = screenPicName;
         return tmpData;
     }
 
@@ -955,8 +977,8 @@ public class ChapterController : MonoBehaviour
             }
             else//不跳过未读文本，需要将settingDatas下存储的最新Index作比较
             {
-                if((chapterIndex < GameController._instance.settingDatas.chapterIndex) ||
-                   ((chapterIndex == GameController._instance.settingDatas.chapterIndex) && (dialogIndex < GameController._instance.settingDatas.maxDialogIndex)))
+                if((chapterIndex < maxChapterIndex) ||
+                   ((chapterIndex == maxChapterIndex) && (dialogIndex < GameController._instance.settingDatas.maxDialogIndex)))
                 {
                     GetNextDialog();
                     yield return new WaitForSeconds(skipSpeed);
@@ -976,29 +998,25 @@ public class ChapterController : MonoBehaviour
 
     public void ReturnMenu()
     {
-        rolesContainer.SetActive(false);
-        lineContainer.SetActive(false);
-        background.SetActive(false);
+        HideContainer(chapterContainer);
+        HideContainer(shootChoiceContainer);
         endPanel.SetActive(false);
-        topMenu.SetActive(false);
-        isSkipDialog = false;
-        isAutoPlay = false;
         bgmAudioSource.Stop();
         bgvAudioSource.Stop();
         cvAudioSource.Stop();
         chapterMode = false;
-        GameController._instance.titleContainer.SetActive(true);
+        GameController._instance.GoToTitle();
     }
 
-    public void DarkTransition()
-    {
-        blackMask.color -= new Color(0, 0, 0, Mathf.Lerp(1, 0, 0.2f));
-        if (blackMask.color.a <= 0.2f)
-        {
-            blackMask.color = new Color(0, 0, 0, 0);
-            isTransition = false;
-        }
-    }
+    //public void DarkTransition()
+    //{
+    //    blackMask.color -= new Color(0, 0, 0, Mathf.Lerp(1, 0, 0.2f));
+    //    if (blackMask.color.a <= 0.2f)
+    //    {
+    //        blackMask.color = new Color(0, 0, 0, 0);
+    //        isTransition = false;
+    //    }
+    //}
 
     public void ShowClothes(bool clothes)
     {
@@ -1020,7 +1038,7 @@ public class ChapterController : MonoBehaviour
         isSkipUntilShoot = isUntil;
     }
 
-    public void LoadRolePic(int index)
+    public void LoadRolePic(int index, bool isPlayAction)
     {
 
         string[] rolePicArray = dialogArray[index][5].Split('/');
@@ -1040,10 +1058,12 @@ public class ChapterController : MonoBehaviour
                         leftRolePic.GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/Role/" + rolePicArray[i]);
                     }
                     leftRolePic.SetActive(true);
-                    if (actionArray.Length > i && actionArray[i].Equals("Move"))
+                    if (actionArray.Length > i && actionArray[i].Equals("Move") && isPlayAction)
                     {
-                        moveRoleImage = leftRolePic.GetComponent<Image>();
-                        moveRoleInitPos = leftRolePic.transform.position;
+                        moveRoleImage = leftRole;
+                        //moveRoleImage = leftRolePic.GetComponent<Image>();
+                        moveRoleInitPos = leftRole.transform.position;
+                        //moveRoleInitPos = leftRolePic.transform.position;
                         isMoveAction = true;
                     }
 
@@ -1058,10 +1078,10 @@ public class ChapterController : MonoBehaviour
                         centerRolePic.GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/Role/" + rolePicArray[i]);
                     }
                     centerRolePic.SetActive(true);
-                    if (actionArray.Length > i && actionArray[i].Equals("Move"))
+                    if (actionArray.Length > i && actionArray[i].Equals("Move") && isPlayAction)
                     {
-                        moveRoleImage = centerRolePic.GetComponent<Image>();
-                        moveRoleInitPos = centerRolePic.transform.position;
+                        moveRoleImage = centerRole;
+                        moveRoleInitPos = centerRole.transform.position;
                         isMoveAction = true;
                     }
                     break;
@@ -1075,10 +1095,10 @@ public class ChapterController : MonoBehaviour
                         rightRolePic.GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/Role/" + rolePicArray[i]);
                     }
                     rightRolePic.SetActive(true);
-                    if (actionArray.Length > i && actionArray[i].Equals("Move"))
+                    if (actionArray.Length > i && actionArray[i].Equals("Move") && isPlayAction)
                     {
-                        moveRoleImage = rightRolePic.GetComponent<Image>();
-                        moveRoleInitPos = rightRolePic.transform.position;
+                        moveRoleImage = rightRole;
+                        moveRoleInitPos = rightRole.transform.position;
                         isMoveAction = true;
                     }
                     break;
@@ -1154,8 +1174,8 @@ public class ChapterController : MonoBehaviour
     public void ExitReviewPanel()
     {
         reviewDialogPanel.SetActive(false);
-        lineContainer.SetActive(true);
-        topMenu.SetActive(true);
+        ShowLineContainer();
+        ShowTopMenu();
     }
 
     public void IsContinuePlayCV(bool value)
@@ -1168,8 +1188,8 @@ public class ChapterController : MonoBehaviour
         isChangeReadedTextColor = value;
         if (isChangeReadedTextColor)
         {
-            if ((chapterIndex < GameController._instance.settingDatas.chapterIndex) ||
-                   ((chapterIndex == GameController._instance.settingDatas.chapterIndex) && (dialogIndex < GameController._instance.settingDatas.maxDialogIndex)))
+            if ((chapterIndex < maxChapterIndex) ||
+                   ((chapterIndex == maxChapterIndex) && (dialogIndex < GameController._instance.settingDatas.maxDialogIndex)))
             {
                 line.color = Color.yellow;
                 roleName.color = Color.yellow;
@@ -1187,9 +1207,12 @@ public class ChapterController : MonoBehaviour
         }
     }
     
+    //选择内外设的逻辑，将要显示的图片名称存放，退出choose模式
     public void SetTempCGPic(string cg)
     {
         tempCGPic = cg;
+        isChooseMode = false;
+        shootChoiceContainer.SetActive(false);
         GetNextDialog();
     }
 
@@ -1206,5 +1229,97 @@ public class ChapterController : MonoBehaviour
         }
 
         return null;
+    }
+
+    private void ShowTopMenu()
+    {
+        topMenu.SetActive(true);
+        if (memoryMode)
+        {
+            topMenu.transform.Find("SaveBtn").gameObject.SetActive(false);
+            topMenu.transform.Find("LoadBtn").gameObject.SetActive(false);
+        }
+        else
+        {
+            topMenu.transform.Find("SaveBtn").gameObject.SetActive(true);
+            topMenu.transform.Find("LoadBtn").gameObject.SetActive(true);
+        }
+    }
+
+    private void ShowLineContainer()
+    {
+        lineContainer.SetActive(true);
+        if (memoryMode)
+        {
+            lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("QSaveBtn").gameObject.SetActive(false);
+            lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("QLoadBtn").gameObject.SetActive(false);
+            lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("ReturnBtn").gameObject.SetActive(true);
+        }
+        else
+        {
+            lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("QSaveBtn").gameObject.SetActive(true);
+            lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("QLoadBtn").gameObject.SetActive(true);
+            lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("ReturnBtn").gameObject.SetActive(false);
+        }
+    }
+
+    public void ExitMemoryMode()
+    {
+        //rolesContainer.SetActive(false);
+        //lineContainer.SetActive(false);
+        chapterContainer.SetActive(false);
+        StopCoroutine("ShowLineCoroutine");
+        showLineTexting = false;
+        GameController._instance.memoryPanel.SetActive(true);
+        memoryMode = false;
+        chapterMode = false;
+        bgvAudioSource.Stop();
+        cvAudioSource.Stop();
+    }
+
+    //public void ShowChoiceContainer(GameObject container)
+    //{
+    //    container.SetActive(true);
+    //    isChooseMode = true;
+    //}
+
+    private void HideContainer(GameObject container)
+    {
+        container.SetActive(false);
+        if(!optionPanel.activeInHierarchy && !shootChoiceContainer.activeInHierarchy)
+        {
+            isChooseMode = false;
+        }
+        if (!chapterContainer.activeInHierarchy)
+        {
+            chapterMode = false;
+        }
+    }
+
+    //将CG加入解锁的CG数组中
+    private void AddCGToArray(string cgIndex, string cgName)
+    {
+        List<string> cgList = new List<string>();
+        int arrayIndex = int.Parse(cgIndex);
+        if (GameController._instance.cgArray[arrayIndex - 1].Length == 1 && GameController._instance.cgArray[arrayIndex - 1][0].Equals("0"))
+        {
+            GameController._instance.cgArray[arrayIndex - 1][0] = cgName;
+        }
+        else
+        {
+            for (int i = 0; i < GameController._instance.cgArray[arrayIndex - 1].Length; i++)
+            {
+                if (GameController._instance.cgArray[arrayIndex - 1][i].Equals(cgName))
+                {
+                    break;
+                }
+                cgList.Add(GameController._instance.cgArray[arrayIndex - 1][i]);
+                if ((i + 1) == GameController._instance.cgArray[arrayIndex - 1].Length)
+                {
+                    cgList.Add(cgName);
+                    GameController._instance.cgArray[arrayIndex - 1] = cgList.ToArray();
+                }
+            }
+        }
     }
 }

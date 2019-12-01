@@ -7,7 +7,9 @@ public class SettingController : MonoBehaviour
 {
     public static SettingController _isntance;
     public GameObject Bgm, Bgv, Voice;
-    public Slider BgmSlider, BgvSlider, VoiceSlider, DialogSpeedSlider, SkipSpeedSlider, DialogTransparentSlider, FirstVoiceSlider, SecondVoiceSlider, ThirdVoiceSlider, FourthVoiceSlider;
+    public Slider BgmSlider, BgvSlider, DialogSpeedSlider, SkipSpeedSlider, 
+        DialogTransparentSlider, FirstVoiceSlider, SecondVoiceSlider, ThirdVoiceSlider, 
+        FourthVoiceSlider, SEVoiceSlider, HSEVoiceSlider;
     // Use this for initialization
     void Awake()
     {
@@ -24,9 +26,14 @@ public class SettingController : MonoBehaviour
         Bgm.GetComponent<AudioSource>().volume = BgmSlider.value;
     }
 
-    public void ChangeVoiceVolume()
+    public void ChangeSEVolume()
     {
-        Voice.GetComponent<AudioSource>().volume = VoiceSlider.value;
+        ChapterController._instance.seAudioSource.volume = SEVoiceSlider.value;
+    }
+
+    public void ChangeHSEVolume()
+    {
+        ChapterController._instance.hseAudioSource.volume = HSEVoiceSlider.value;
     }
 
     public void ChangeDialogSpeed()
