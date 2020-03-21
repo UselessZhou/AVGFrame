@@ -60,14 +60,53 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Chapters\Runtime\Chapter.cs" />
+    <Compile Include="Assets\Chapters\Runtime\ChapterData.cs" />
+    <Compile Include="Assets\Chapters\Runtime\Sheet1.cs" />
+    <Compile Include="Assets\Chapters\Runtime\Sheet1Data.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleAudio.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModulePhysics.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModulePhysics2D.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleSprite.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleUI.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleUnityVersion.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleUtils.cs" />
+    <Compile Include="Assets\Demigiant\DOTweenPro\DOTweenAnimation.cs" />
+    <Compile Include="Assets\Demigiant\DOTweenPro\DOTweenProShortcuts.cs" />
+    <Compile Include="Assets\Demigiant\DOTweenPro\DOTweenTextMeshPro.cs" />
+    <Compile Include="Assets\Demigiant\DOTweenPro\DOTweenTk2d.cs" />
+    <Compile Include="Assets\QuickSheet\Runtime\ExposePropertyAttribute.cs" />
+    <Compile Include="Assets\QuickSheet\Runtime\Util\ConvertExt.cs" />
+    <Compile Include="Assets\Scripts\AVGController.cs" />
+    <Compile Include="Assets\Scripts\AVGState.cs" />
     <Compile Include="Assets\Scripts\Controller\ButtonController.cs" />
     <Compile Include="Assets\Scripts\Controller\ChapterController.cs" />
     <Compile Include="Assets\Scripts\Controller\GameController.cs" />
     <Compile Include="Assets\Scripts\Controller\SettingController.cs" />
+    <Compile Include="Assets\Scripts\DialogueManager.cs" />
+    <Compile Include="Assets\Scripts\DialogueState.cs" />
+    <Compile Include="Assets\Scripts\Model\AVGData.cs" />
     <Compile Include="Assets\Scripts\Model\CGIndexModel.cs" />
     <Compile Include="Assets\Scripts\Model\RoleModel.cs" />
     <Compile Include="Assets\Scripts\Model\SavedDataModel.cs" />
     <Compile Include="Assets\Scripts\Model\SettingModel.cs" />
+    <Compile Include="Assets\Scripts\PlayerController.cs" />
+    <Compile Include="Assets\Scripts\SceneManager.cs" />
+    <Compile Include="Assets\Scripts\TestDemo.cs" />
+    <None Include="Assets\Demigiant\DOTweenPro\readme.txt" />
+    <None Include="Assets\QuickSheet\GDataPlugin\Templates\DataClass.txt" />
+    <None Include="Assets\QuickSheet\GDataPlugin\Templates\ScriptableObjectEditorClass.txt" />
+    <None Include="Assets\QuickSheet\GDataPlugin\Templates\Property.txt" />
+    <None Include="Assets\QuickSheet\ExcelPlugin\Templates\Property.txt" />
+    <None Include="Assets\Demigiant\DOTween\readme.txt" />
+    <None Include="Assets\QuickSheet\ExcelPlugin\Templates\PostProcessor.txt" />
+    <None Include="Assets\QuickSheet\ExcelPlugin\Templates\ScriptableObjectClass.txt" />
+    <None Include="Assets\QuickSheet\ExcelPlugin\Templates\ScriptableObjectEditorClass.txt" />
+    <None Include="Assets\Demigiant\DemiLib\Core\DemiLib.xml" />
+    <None Include="Assets\QuickSheet\GDataPlugin\Templates\ScriptableObjectClass.txt" />
+    <None Include="Assets\QuickSheet\GDataPlugin\Templates\AssetFileClass.txt" />
+    <None Include="Assets\QuickSheet\ExcelPlugin\Templates\DataClass.txt" />
+    <None Include="Assets\Demigiant\readme_DOTweenPro.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>E:/GitHub/AVGFrame/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
@@ -284,32 +323,14 @@
     <Reference Include="UnityEngine.SpatialTracking">
       <HintPath>E:/DevelopTools/Unity/Editor/Data/UnityExtensions/Unity/UnitySpatialTracking/RuntimeEditor/UnityEngine.SpatialTracking.dll</HintPath>
     </Reference>
-    <Reference Include="Excel">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/Excel.dll</HintPath>
+    <Reference Include="DemiLib">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Demigiant/DemiLib/Core/DemiLib.dll</HintPath>
     </Reference>
-    <Reference Include="I18N.CJK">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.CJK.dll</HintPath>
+    <Reference Include="DOTween">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Demigiant/DOTween/DOTween.dll</HintPath>
     </Reference>
-    <Reference Include="I18N">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.dll</HintPath>
-    </Reference>
-    <Reference Include="I18N.MidEast">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.MidEast.dll</HintPath>
-    </Reference>
-    <Reference Include="I18N.Other">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.Other.dll</HintPath>
-    </Reference>
-    <Reference Include="I18N.Rare">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.Rare.dll</HintPath>
-    </Reference>
-    <Reference Include="I18N.West">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/I18N.West.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>E:/GitHub/AVGFrame/Assets/Plugin/Newtonsoft.Json.dll</HintPath>
+    <Reference Include="DOTweenPro">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Demigiant/DOTweenPro/DOTweenPro.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.Editor">
       <HintPath>E:/GitHub/AVGFrame/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Editor.dll</HintPath>

@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8443dbac0ace2949ac2af370074eed3, type: 3}
+  m_Name: Story01
+  m_EditorClassIdentifier: 
+  SheetName: Assets/MyStory/testChapter.xls
+  WorksheetName: Story01
+  dataArray:
+  - dialogtext: 123
+    charaadisplay: 1
+    charabdisplay: 0
+    ischoice: 0
+    btnatext: 
+    btnamsg: 
+    btnbtext: 
+    btnbmsg: 
+  - dialogtext: 321
+    charaadisplay: 0
+    charabdisplay: 1
+    ischoice: 0
+    btnatext: 
+    btnamsg: 
+    btnbtext: 
+    btnbmsg: 
+  - dialogtext: 111
+    charaadisplay: 1
+    charabdisplay: 1
+    ischoice: 1
+    btnatext: '!AAA'
+    btnamsg: AAA
+    btnbtext: '!BBB'
+    btnbmsg: BBB
+  dataList:
+  - dialogtext: 123
+    charaadisplay: 1
+    charabdisplay: 0
+    ischoice: 0
+    btnatext: 
+    btnamsg: 
+    btnbtext: 
+    btnbmsg: 
+  - dialogtext: 321
+    charaadisplay: 0
+    charabdisplay: 1
+    ischoice: 0
+    btnatext: 
+    btnamsg: 
+    btnbtext: 
+    btnbmsg: 
+  - dialogtext: 111
+    charaadisplay: 1
+    charabdisplay: 1
+    ischoice: 1
+    btnatext: '!AAA'
+    btnamsg: AAA
+    btnbtext: '!BBB'
+    btnbmsg: BBB

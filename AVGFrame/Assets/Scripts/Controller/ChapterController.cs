@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Asserts.Scripts.Model;
-using System.Text;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+//using Newtonsoft.Json.Linq;
+//using Newtonsoft.Json;
 using UnityEngine.UI;
 using System;
-using Excel;
 using System.Data;
 using UnityEngine.EventSystems;
+using DG.Tweening;
 
 public class ChapterController : MonoBehaviour
 {
@@ -45,7 +44,7 @@ public class ChapterController : MonoBehaviour
     private GameObject centerRolePic;
     private GameObject rightRolePic;
 
-    public string screenPicName;
+    public string screenPicName;    //背景图片，用于显示和存储在S/L页面
     //public bool isSavedData;何用？？？？
 
     //private AudioClip cvAudio;
@@ -154,8 +153,8 @@ public class ChapterController : MonoBehaviour
         rightRolePic = rightRole.transform.Find("RightRolePic").gameObject;
         centerRolePic = centerRole.transform.Find("CenterRolePic").gameObject;
         voiceBtn = lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("VoiceBtn").GetComponent<Button>();
-        screenPicName = SetScreenPicName();
-        isContinuePlayCV = GameController._instance.settingDatas.isContinuePlayCV;
+        //screenPicName = SetScreenPicName();
+        //isContinuePlayCV = GameController._instance.settingDatas.isContinuePlayCV;
         isChangeReadedTextColor = GameController._instance.settingDatas.isChangeReadedTextColor;
         rightFunction = GameController._instance.settingDatas.rightFunction;
         isSkipUntilHScene = GameController._instance.settingDatas.isSkipUntilHScene;
@@ -178,7 +177,7 @@ public class ChapterController : MonoBehaviour
         memoryMode = false;
         mainCamera = GetComponent<Camera>();
         chapterIndex = 0;
-        LoadXlsFile(chapterIndex);//首先进入序章
+        //LoadXlsFile(chapterIndex);//首先进入序章
 
     }
 
@@ -413,7 +412,7 @@ public class ChapterController : MonoBehaviour
             dialogArray[i] = lineArray[i].Split(',');
         }
     }
-
+    /*
     //按照章节读取剧本
     public void LoadXlsFile(int chapterNum)
     {
@@ -436,7 +435,7 @@ public class ChapterController : MonoBehaviour
             dialogArray[i] = value;
         }
         chapterIndex = chapterNum;
-    }
+    }*/
 
     public void GetNextDialog()
     {
@@ -575,7 +574,7 @@ public class ChapterController : MonoBehaviour
         }
         else if(dialogIndex >= dialogArray.Length && chapterIndex == 0)//序章完成，直接进入第一章节
         {
-            LoadXlsFile(1);
+            //LoadXlsFile(1);
             dialogIndex = 1;
             GetNextDialog();
         }
@@ -586,7 +585,8 @@ public class ChapterController : MonoBehaviour
     {
         ShowLineContainer();
         string dialogContext = dialogArray[dialogIndex][2];
-        string dialogScene = dialogArray[dialogIndex][3];
+        //string dialogScene = dialogArray[dialogIndex][3];
+        screenPicName = dialogArray[dialogIndex][3];
         string dialogRole = dialogArray[dialogIndex][4];
         string dialogAudio = dialogArray[dialogIndex][7];
         string bgmAudio = dialogArray[dialogIndex][9];
@@ -621,24 +621,28 @@ public class ChapterController : MonoBehaviour
             if(shootChoice == 1)
             {
                 cgName = cgIndex + "_in";
-                background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene + "_in");
+                screenPicName = screenPicName + "_in";
+                background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + screenPicName);
             }
             else if(shootChoice == 2)
             {
                 cgName = cgIndex + "_out";
-                background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene + "_out");
+                screenPicName = screenPicName + "_out";
+                background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + screenPicName);
             }
             else
             {
                 if(null == tempCGPic)//如果出现特殊情况变量为空，都内设处理
                 {
                     cgName = cgIndex + "_in";
-                    background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene + "_in");
+                    screenPicName = screenPicName + "_in";
+                    background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + screenPicName);
                 }
                 else
                 {
                     cgName = cgIndex + tempCGPic;
-                    background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene + tempCGPic);
+                    screenPicName = screenPicName + tempCGPic;
+                    background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + screenPicName);
                 }
             }
 
@@ -647,7 +651,7 @@ public class ChapterController : MonoBehaviour
         }
         else
         {
-            background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + dialogScene);
+            background.transform.Find("bg").GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + screenPicName);
 
             if (!cgIndex.Equals(""))
             {
@@ -876,7 +880,7 @@ public class ChapterController : MonoBehaviour
         tmpData.dialogInedx = dialogIndex - 1;
         tmpData.savedTime = DateTime.Now;
         tmpData.chapterIndex = chapterIndex;
-        //tmpData.savedPicName = screenPicName;
+        tmpData.savedPicName = screenPicName;
         return tmpData;
     }
 
@@ -904,7 +908,7 @@ public class ChapterController : MonoBehaviour
     //跳过序章的按钮
     public void SkipChapter()
     {
-        LoadXlsFile(1);
+        //LoadXlsFile(1);
         dialogIndex = 1;
         GetNextDialog();
     }
@@ -912,7 +916,7 @@ public class ChapterController : MonoBehaviour
     //不跳过序章的按钮
     public void NoSkipChapter()
     {
-        LoadXlsFile(0);
+        //LoadXlsFile(0);
         dialogIndex = 1;
         GetNextDialog();
     }
@@ -1253,13 +1257,13 @@ public class ChapterController : MonoBehaviour
         {
             lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("QSaveBtn").gameObject.SetActive(false);
             lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("QLoadBtn").gameObject.SetActive(false);
-            lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("ReturnBtn").gameObject.SetActive(true);
+            //lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("ReturnBtn").gameObject.SetActive(true);
         }
         else
         {
             lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("QSaveBtn").gameObject.SetActive(true);
             lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("QLoadBtn").gameObject.SetActive(true);
-            lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("ReturnBtn").gameObject.SetActive(false);
+            //lineContainer.transform.Find("BottomMenu").gameObject.transform.Find("ReturnBtn").gameObject.SetActive(false);
         }
     }
 

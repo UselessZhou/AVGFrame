@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80e14a72067f1ad408ec8d661bc560ce, type: 3}
+  m_Name: New Import Setting
+  m_EditorClassIdentifier: 
+  templatePath: QuickSheet/ExcelPlugin/Templates
+  scriptFilePath: Chapters/Runtime
+  editorScriptFilePath: Chapters/Editor
+  sheetName: testChapter.xls
+  workSheetName: Sheet1
+  columnHeaderList:
+  - type: 3
+    name: Index
+    isEnable: 0
+    isArray: 0
+  - type: 1
+    name: Type
+    isEnable: 0
+    isArray: 0
+  - type: 1
+    name: Content
+    isEnable: 0
+    isArray: 0
+  - type: 1
+    name: Name
+    isEnable: 0
+    isArray: 0
+  - type: 1
+    name: leftPic
+    isEnable: 0
+    isArray: 0
+  - type: 1
+    name: rightPic
+    isEnable: 0
+    isArray: 0
+  - type: 1
+    name: centerPic
+    isEnable: 0
+    isArray: 0
+  - type: 8
+    name: showLeft
+    isEnable: 0
+    isArray: 0
+  - type: 8
+    name: showRight
+    isEnable: 0
+    isArray: 0
+  - type: 8
+    name: showCenter
+    isEnable: 0
+    isArray: 0
+  - type: 1
+    name: ChoiceContent
+    isEnable: 0
+    isArray: 0
+  - type: 3
+    name: TargetIndex
+    isEnable: 0
+    isArray: 0
+  excelFilePath: Assets/Chapters/testChapter.xls
+  SheetNames:
+  - Sheet1
+  - Sheet2
+  - Sheet3
+  currentSelectedSheet: 0

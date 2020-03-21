@@ -286,7 +286,6 @@ E:\GitHub\AVGFrame\Temp\bin\Debug\Assembly-CSharp.pdb
 E:\GitHub\AVGFrame\Temp\bin\Debug\Microsoft.Win32.Primitives.dll
 E:\GitHub\AVGFrame\Temp\bin\Debug\mscorlib.dll
 E:\GitHub\AVGFrame\Temp\bin\Debug\netstandard.dll
-E:\GitHub\AVGFrame\Temp\bin\Debug\Newtonsoft.Json.dll
 E:\GitHub\AVGFrame\Temp\bin\Debug\nunit.framework.dll
 E:\GitHub\AVGFrame\Temp\bin\Debug\System.AppContext.dll
 E:\GitHub\AVGFrame\Temp\bin\Debug\System.Collections.Concurrent.dll
@@ -564,11 +563,9 @@ E:\GitHub\AVGFrame\obj\Debug\Assembly-CSharp.csproj.CoreCompileInputs.cache
 E:\GitHub\AVGFrame\obj\Debug\Assembly-CSharp.csproj.CopyComplete
 E:\GitHub\AVGFrame\obj\Debug\Assembly-CSharp.dll
 E:\GitHub\AVGFrame\obj\Debug\Assembly-CSharp.pdb
-E:\GitHub\AVGFrame\Temp\bin\Debug\Excel.dll
-E:\GitHub\AVGFrame\Temp\bin\Debug\ICSharpCode.SharpZipLib.dll
-E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.CJK.dll
-E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.dll
-E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.MidEast.dll
-E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.Other.dll
-E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.Rare.dll
-E:\GitHub\AVGFrame\Temp\bin\Debug\I18N.West.dll
+E:\GitHub\AVGFrame\Temp\bin\Debug\DemiLib.dll
+E:\GitHub\AVGFrame\Temp\bin\Debug\DOTween.dll
+E:\GitHub\AVGFrame\Temp\bin\Debug\DOTweenPro.dll
+E:\GitHub\AVGFrame\Temp\bin\Debug\DemiLib.xml
+E:\GitHub\AVGFrame\Temp\bin\Debug\DOTween.xml
+E:\GitHub\AVGFrame\Temp\bin\Debug\DOTweenPro.xml

@@ -1,0 +1,570 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12efeceb4990bcd47ab66ed1079e6cca, type: 3}
+  m_Name: Sheet1
+  m_EditorClassIdentifier: 
+  SheetName: Assets/Chapters/testChapter.xls
+  WorksheetName: Sheet1
+  dataArray:
+  - index: 1
+    type: Dialogue
+    content: "11\u4F46\u4E8B\u5B9E\u4E0A\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240"
+    name: "\u5468"
+    leftpic: Big1
+    rightpic: 
+    centerpic: 
+    showleft: 1
+    showright: 0
+    showcenter: 0
+    choicecontent: 
+    targetindex: 0
+  - index: 2
+    type: Dialogue
+    content: "\u65A4\u65A4\u8BA1\u8F83\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u53CD\u53CD\u590D\u590D\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8"
+    name: "\u52A0"
+    leftpic: 
+    rightpic: man1
+    centerpic: Big2
+    showleft: 0
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 3
+    type: Dialogue
+    content: "\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D"
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: 
+    centerpic: blue1
+    showleft: 0
+    showright: 0
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 4
+    type: Dialogue
+    content: "\u4E34\u65F6\u8BBE\u65BD\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 5
+    type: Choice
+    content: 
+    name: 
+    leftpic: 
+    rightpic: 
+    centerpic: 
+    showleft: 0
+    showright: 0
+    showcenter: 0
+    choicecontent: "\u9009\u98791>6#\u90092>13"
+    targetindex: 0
+  - index: 6
+    type: Dialogue
+    content: "\u554A\u554AChoice1-1"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 7
+    type: Dialogue
+    content: "\u554A\u554AChoice1-2"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 8
+    type: Dialogue
+    content: "\u554A\u554AChoice1-3"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 9
+    type: Dialogue
+    content: "\u554A\u554AChoice1-4"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 10
+    type: Dialogue
+    content: "\u554A\u554AChoice1-5"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 11
+    type: Dialogue
+    content: "\u554A\u554AChoice1-6"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 12
+    type: Jump
+    content: 
+    name: 
+    leftpic: 
+    rightpic: 
+    centerpic: 
+    showleft: 0
+    showright: 0
+    showcenter: 0
+    choicecontent: 
+    targetindex: 20
+  - index: 13
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-2"
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: 
+    centerpic: blue1
+    showleft: 0
+    showright: 0
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 14
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-3"
+    name: "\u5C31\u80FD"
+    leftpic: Big1
+    rightpic: 
+    centerpic: 
+    showleft: 1
+    showright: 0
+    showcenter: 0
+    choicecontent: 
+    targetindex: 0
+  - index: 15
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-4"
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: man1
+    centerpic: Big2
+    showleft: 0
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 16
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-5"
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: 
+    centerpic: blue1
+    showleft: 0
+    showright: 0
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 17
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-6"
+    name: "\u5C31\u80FD"
+    leftpic: Big1
+    rightpic: 
+    centerpic: 
+    showleft: 1
+    showright: 0
+    showcenter: 0
+    choicecontent: 
+    targetindex: 0
+  - index: 18
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-7"
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: man1
+    centerpic: Big2
+    showleft: 0
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 19
+    type: Jump
+    content: 
+    name: 
+    leftpic: 
+    rightpic: 
+    centerpic: 
+    showleft: 0
+    showright: 0
+    showcenter: 0
+    choicecontent: 
+    targetindex: 22
+  - index: 20
+    type: Dialogue
+    content: Jump1Success
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 21
+    type: Dialogue
+    content: "\u554A\u554AChoice1-2"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 22
+    type: Dialogue
+    content: Jump2Success
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: 
+    centerpic: blue1
+    showleft: 0
+    showright: 0
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 23
+    type: Dialogue
+    content: "\u554A\u554A"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  dataList:
+  - index: 1
+    type: Dialogue
+    content: "11\u4F46\u4E8B\u5B9E\u4E0A\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240"
+    name: "\u5468"
+    leftpic: Big1
+    rightpic: 
+    centerpic: 
+    showleft: 1
+    showright: 0
+    showcenter: 0
+    choicecontent: 
+    targetindex: 0
+  - index: 2
+    type: Dialogue
+    content: "\u65A4\u65A4\u8BA1\u8F83\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u53CD\u53CD\u590D\u590D\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8"
+    name: "\u52A0"
+    leftpic: 
+    rightpic: man1
+    centerpic: Big2
+    showleft: 0
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 3
+    type: Dialogue
+    content: "\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D"
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: 
+    centerpic: blue1
+    showleft: 0
+    showright: 0
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 4
+    type: Dialogue
+    content: "\u4E34\u65F6\u8BBE\u65BD\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 5
+    type: Choice
+    content: 
+    name: 
+    leftpic: 
+    rightpic: 
+    centerpic: 
+    showleft: 0
+    showright: 0
+    showcenter: 0
+    choicecontent: "\u9009\u98791>6#\u90092>13"
+    targetindex: 0
+  - index: 6
+    type: Dialogue
+    content: "\u554A\u554AChoice1-1"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 7
+    type: Dialogue
+    content: "\u554A\u554AChoice1-2"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 8
+    type: Dialogue
+    content: "\u554A\u554AChoice1-3"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 9
+    type: Dialogue
+    content: "\u554A\u554AChoice1-4"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 10
+    type: Dialogue
+    content: "\u554A\u554AChoice1-5"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 11
+    type: Dialogue
+    content: "\u554A\u554AChoice1-6"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 12
+    type: Jump
+    content: 
+    name: 
+    leftpic: 
+    rightpic: 
+    centerpic: 
+    showleft: 0
+    showright: 0
+    showcenter: 0
+    choicecontent: 
+    targetindex: 20
+  - index: 13
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-2"
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: 
+    centerpic: blue1
+    showleft: 0
+    showright: 0
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 14
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-3"
+    name: "\u5C31\u80FD"
+    leftpic: Big1
+    rightpic: 
+    centerpic: 
+    showleft: 1
+    showright: 0
+    showcenter: 0
+    choicecontent: 
+    targetindex: 0
+  - index: 15
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-4"
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: man1
+    centerpic: Big2
+    showleft: 0
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 16
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-5"
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: 
+    centerpic: blue1
+    showleft: 0
+    showright: 0
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 17
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-6"
+    name: "\u5C31\u80FD"
+    leftpic: Big1
+    rightpic: 
+    centerpic: 
+    showleft: 1
+    showright: 0
+    showcenter: 0
+    choicecontent: 
+    targetindex: 0
+  - index: 18
+    type: Dialogue
+    content: "\u8C22\u8C22Choice1-7"
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: man1
+    centerpic: Big2
+    showleft: 0
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 19
+    type: Jump
+    content: 
+    name: 
+    leftpic: 
+    rightpic: 
+    centerpic: 
+    showleft: 0
+    showright: 0
+    showcenter: 0
+    choicecontent: 
+    targetindex: 22
+  - index: 20
+    type: Dialogue
+    content: Jump1Success
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 21
+    type: Dialogue
+    content: "\u554A\u554AChoice1-2"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 22
+    type: Dialogue
+    content: Jump2Success
+    name: "\u5C31\u80FD"
+    leftpic: 
+    rightpic: 
+    centerpic: blue1
+    showleft: 0
+    showright: 0
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0
+  - index: 23
+    type: Dialogue
+    content: "\u554A\u554A"
+    name: "\u540D\u5B57"
+    leftpic: man2
+    rightpic: blue2
+    centerpic: pink0
+    showleft: 1
+    showright: 1
+    showcenter: 1
+    choicecontent: 
+    targetindex: 0

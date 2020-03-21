@@ -4,16 +4,17 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.IO;
-using Newtonsoft.Json.Linq;
+//using Newtonsoft.Json.Linq;
 using System.Text;
 using Asserts.Scripts.Model;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using System;
 
 public class GameController : MonoBehaviour
 {
     public static GameController _instance;
 
+    public Chapter chapter;
     private static string rootPath; //根目录
     private static string savedDatasPath; //剧本目录
     private static string savedDatasFile; //剧本文件名
@@ -72,7 +73,7 @@ public class GameController : MonoBehaviour
     private void Awake()
     {
         _instance = this;
-        logo.gameObject.SetActive(true);
+        //logo.gameObject.SetActive(true);
     }
 
     private void Start()
@@ -105,12 +106,12 @@ public class GameController : MonoBehaviour
 
         settingPannel = displayCanvas.transform.Find("SettingPanel").gameObject;
         savedDatas = new List<SavedDataModel>();
-        LoadDatas<List<SavedDataModel>>(savedDatasFile, savedDatas);
+        //LoadDatas<List<SavedDataModel>>(savedDatasFile, savedDatas);
         qSavedData = new SavedDataModel();
-        LoadDatas<SavedDataModel>(qSavedDataFile, qSavedData);
+       // LoadDatas<SavedDataModel>(qSavedDataFile, qSavedData);
         settingDatas = new SettingModel();
-        LoadDatas<SettingModel>(settingDataFile, settingDatas);
-        AnalyzeCGArray(settingDatas.cgSavedData);
+        //LoadDatas<SettingModel>(settingDataFile, settingDatas);
+        //AnalyzeCGArray(settingDatas.cgSavedData);
         ChapterController._instance.noClothes = settingDatas.noClothes;//先要读取是否着装的设置
 
     }
@@ -136,9 +137,9 @@ public class GameController : MonoBehaviour
     private void OnApplicationQuit()
     {
         settingDatas.cgSavedData = CGArrayToString();
-        SaveDatas<SettingModel>(settingDataFile, settingDatas);
-        SaveDatas<SavedDataModel>(qSavedDataFile, qSavedData);
-        SaveDatas<List<SavedDataModel>>(savedDatasFile, savedDatas);
+        //SaveDatas<SettingModel>(settingDataFile, settingDatas);
+        //SaveDatas<SavedDataModel>(qSavedDataFile, qSavedData);
+        //SaveDatas<List<SavedDataModel>>(savedDatasFile, savedDatas);
     }
 
     public void GoToTitle()
@@ -154,7 +155,7 @@ public class GameController : MonoBehaviour
         logo.SetActive(false);
         skipContainer.SetActive(true);
     }
-
+    /*
     /// <summary>
     /// 从文件中获取存档的信息
     /// </summary>
@@ -207,7 +208,7 @@ public class GameController : MonoBehaviour
             }
         }
     }
-
+    */
     private void InitData<T>(T data)
     {
         if(data.GetType() == typeof(SettingModel))
@@ -284,7 +285,7 @@ public class GameController : MonoBehaviour
             {
                 //savedBtn.transform.Find("SavedPic").GetComponent<Image>().sprite = Resources.Load<Sprite>(string.Format("SavedData/{0}", savedDatas[i].savedPicName));
                 savedBtn.transform.Find("Date").GetComponent<Text>().text = savedDatas[i].savedTime.ToString();
-                savedBtn.transform.Find("SavedPic").GetComponent<Image>().sprite = Resources.Load<Sprite>("SavedData/noData");
+                savedBtn.transform.Find("SavedPic").GetComponent<Image>().sprite = (Sprite)Resources.Load("Image/ChapterBG/" + savedDatas[i].savedPicName, typeof(Sprite));
             }
             else
             {
@@ -309,7 +310,7 @@ public class GameController : MonoBehaviour
                 int chapterIndex = savedDatas[savedDataIndex].chapterIndex;
                 ChapterController._instance.bgmAudioSource.Stop();
                 ChapterController._instance.bgvAudioSource.Stop();
-                ChapterController._instance.LoadXlsFile(chapterIndex);
+                //ChapterController._instance.LoadXlsFile(chapterIndex);
                 ChapterController._instance.dialogIndex = dialogInedx;
                 ChapterController._instance.GetNextDialog();
             }
@@ -317,12 +318,21 @@ public class GameController : MonoBehaviour
         else
         {
             savedDatas[savedDataIndex] = ChapterController._instance.GetCurrentData();
+            Debug.Log("PIC name: " + savedDatas[savedDataIndex].savedPicName);
+            Debug.Log("Transform name: " + this.transform.name);
+            
             savedDatas[savedDataIndex].savedDataIndex = savedDataIndex;
-            SaveDatas<List<SavedDataModel>>(savedDatasFile, savedDatas);
-        }
-        HideContainer(savedDataPanel);
+            //SaveDatas<List<SavedDataModel>>(savedDatasFile, savedDatas);
+            GameObject btn = savedDataPanel.transform.Find("SavedField" + savedDataIndex.ToString()).gameObject;
+            btn.transform.Find("SavedPic").gameObject.GetComponent<Image>().sprite = (Sprite)Resources.Load("Image/ChapterBG/" + savedDatas[savedDataIndex].savedPicName, typeof(Sprite));
+            btn.transform.Find("Date").gameObject.GetComponent<Text>().text = savedDatas[savedDataIndex].savedTime.ToString();
+
+
+    }
+        //HideContainer(savedDataPanel);
     }
 
+    /*
     /// <summary>
     /// 将存储数据存入本地
     /// </summary>
@@ -338,11 +348,11 @@ public class GameController : MonoBehaviour
             w.Write(savedDataJson);
         }
     }
-
+    */
     public void SetQuickSavedData()
     {
         qSavedData = ChapterController._instance.GetCurrentData();
-        SaveDatas<SavedDataModel>(qSavedDataFile, qSavedData);
+        //SaveDatas<SavedDataModel>(qSavedDataFile, qSavedData);
     }
 
     public void LoadQuickSavedData()
@@ -507,7 +517,7 @@ public class GameController : MonoBehaviour
     {
         //settingDatas.cgIndex = 9;
         AnalyzeCGArray(fullCGArray);
-        SaveDatas<SettingModel>(settingDataFile, settingDatas);
+        //SaveDatas<SettingModel>(settingDataFile, settingDatas);
         settingDatas.memoryIndex = 2;
     }
 
@@ -515,7 +525,7 @@ public class GameController : MonoBehaviour
     {
         //settingDatas.cgIndex = 0;
         AnalyzeCGArray(zeroCGArray);
-        SaveDatas<SettingModel>(settingDataFile, settingDatas);
+        //SaveDatas<SettingModel>(settingDataFile, settingDatas);
         settingDatas.memoryIndex = 0;
     }
 
@@ -608,7 +618,7 @@ public class GameController : MonoBehaviour
         settingDatas.shootChoices = ChapterController._instance.shootChoice;
         settingDatas.chapterIndex = ChapterController._instance.maxChapterIndex;
         settingDatas.cgSavedData = CGArrayToString();
-        SaveDatas<SettingModel>(settingDataFile, settingDatas);
+        //SaveDatas<SettingModel>(settingDataFile, settingDatas);
 
         HideContainer(settingPannel);
         //如果设置了果体，并在章节内，重新Load一下角色图片以立即更新效果
@@ -649,7 +659,7 @@ public class GameController : MonoBehaviour
 
     public void GoMemoryIndex(int index)
     {
-        ChapterController._instance.LoadXlsFile(1);//默认读取正章
+        //ChapterController._instance.LoadXlsFile(1);//默认读取正章
         ChapterController._instance.chapterIndex = 1;
         memoryPanel.SetActive(false);
         extraContainer.SetActive(false);
