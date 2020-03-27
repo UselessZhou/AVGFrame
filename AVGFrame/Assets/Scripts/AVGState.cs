@@ -5,5 +5,6 @@ public enum AVGState
     Chapter,
     Setting,
     Loading,
-    SaveLoad
+    Save,
+    Load
 }

@@ -19,6 +19,7 @@ MonoBehaviour:
     type: Dialogue
     content: "11\u4F46\u4E8B\u5B9E\u4E0A\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240"
     name: "\u5468"
+    background: bg1
     leftpic: Big1
     rightpic: 
     centerpic: 
@@ -31,6 +32,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u65A4\u65A4\u8BA1\u8F83\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u53CD\u53CD\u590D\u590D\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8"
     name: "\u52A0"
+    background: bg1
     leftpic: 
     rightpic: man1
     centerpic: Big2
@@ -43,6 +45,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D"
     name: "\u5C31\u80FD"
+    background: bg2
     leftpic: 
     rightpic: 
     centerpic: blue1
@@ -55,6 +58,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u4E34\u65F6\u8BBE\u65BD\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240"
     name: "\u540D\u5B57"
+    background: bg3
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -67,6 +71,7 @@ MonoBehaviour:
     type: Choice
     content: 
     name: 
+    background: bg4
     leftpic: 
     rightpic: 
     centerpic: 
@@ -79,6 +84,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-1"
     name: "\u540D\u5B57"
+    background: bg5
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -91,6 +97,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-2"
     name: "\u540D\u5B57"
+    background: bg6
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -103,6 +110,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-3"
     name: "\u540D\u5B57"
+    background: bg7
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -115,6 +123,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-4"
     name: "\u540D\u5B57"
+    background: bg8
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -127,6 +136,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-5"
     name: "\u540D\u5B57"
+    background: bg9
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -139,6 +149,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-6"
     name: "\u540D\u5B57"
+    background: bg10
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -151,6 +162,7 @@ MonoBehaviour:
     type: Jump
     content: 
     name: 
+    background: bg11
     leftpic: 
     rightpic: 
     centerpic: 
@@ -163,6 +175,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-2"
     name: "\u5C31\u80FD"
+    background: bg0
     leftpic: 
     rightpic: 
     centerpic: blue1
@@ -175,6 +188,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-3"
     name: "\u5C31\u80FD"
+    background: bg1
     leftpic: Big1
     rightpic: 
     centerpic: 
@@ -187,6 +201,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-4"
     name: "\u5C31\u80FD"
+    background: bg2
     leftpic: 
     rightpic: man1
     centerpic: Big2
@@ -199,6 +214,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-5"
     name: "\u5C31\u80FD"
+    background: bg3
     leftpic: 
     rightpic: 
     centerpic: blue1
@@ -211,6 +227,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-6"
     name: "\u5C31\u80FD"
+    background: bg4
     leftpic: Big1
     rightpic: 
     centerpic: 
@@ -223,6 +240,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-7"
     name: "\u5C31\u80FD"
+    background: bg5
     leftpic: 
     rightpic: man1
     centerpic: Big2
@@ -235,6 +253,7 @@ MonoBehaviour:
     type: Jump
     content: 
     name: 
+    background: bg6
     leftpic: 
     rightpic: 
     centerpic: 
@@ -247,6 +266,7 @@ MonoBehaviour:
     type: Dialogue
     content: Jump1Success
     name: "\u540D\u5B57"
+    background: bg7
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -259,6 +279,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-2"
     name: "\u540D\u5B57"
+    background: bg8
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -271,6 +292,7 @@ MonoBehaviour:
     type: Dialogue
     content: Jump2Success
     name: "\u5C31\u80FD"
+    background: bg9
     leftpic: 
     rightpic: 
     centerpic: blue1
@@ -283,6 +305,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554A"
     name: "\u540D\u5B57"
+    background: bg10
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -296,6 +319,7 @@ MonoBehaviour:
     type: Dialogue
     content: "11\u4F46\u4E8B\u5B9E\u4E0A\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240"
     name: "\u5468"
+    background: bg1
     leftpic: Big1
     rightpic: 
     centerpic: 
@@ -308,6 +332,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u65A4\u65A4\u8BA1\u8F83\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u519B\u53CD\u53CD\u590D\u590D\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8\u4ED8"
     name: "\u52A0"
+    background: bg1
     leftpic: 
     rightpic: man1
     centerpic: Big2
@@ -320,6 +345,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D\u4E0D"
     name: "\u5C31\u80FD"
+    background: bg2
     leftpic: 
     rightpic: 
     centerpic: blue1
@@ -332,6 +358,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u4E34\u65F6\u8BBE\u65BD\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240\u6240"
     name: "\u540D\u5B57"
+    background: bg3
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -344,6 +371,7 @@ MonoBehaviour:
     type: Choice
     content: 
     name: 
+    background: bg4
     leftpic: 
     rightpic: 
     centerpic: 
@@ -356,6 +384,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-1"
     name: "\u540D\u5B57"
+    background: bg5
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -368,6 +397,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-2"
     name: "\u540D\u5B57"
+    background: bg6
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -380,6 +410,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-3"
     name: "\u540D\u5B57"
+    background: bg7
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -392,6 +423,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-4"
     name: "\u540D\u5B57"
+    background: bg8
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -404,6 +436,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-5"
     name: "\u540D\u5B57"
+    background: bg9
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -416,6 +449,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-6"
     name: "\u540D\u5B57"
+    background: bg10
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -428,6 +462,7 @@ MonoBehaviour:
     type: Jump
     content: 
     name: 
+    background: bg11
     leftpic: 
     rightpic: 
     centerpic: 
@@ -440,6 +475,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-2"
     name: "\u5C31\u80FD"
+    background: bg0
     leftpic: 
     rightpic: 
     centerpic: blue1
@@ -452,6 +488,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-3"
     name: "\u5C31\u80FD"
+    background: bg1
     leftpic: Big1
     rightpic: 
     centerpic: 
@@ -464,6 +501,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-4"
     name: "\u5C31\u80FD"
+    background: bg2
     leftpic: 
     rightpic: man1
     centerpic: Big2
@@ -476,6 +514,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-5"
     name: "\u5C31\u80FD"
+    background: bg3
     leftpic: 
     rightpic: 
     centerpic: blue1
@@ -488,6 +527,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-6"
     name: "\u5C31\u80FD"
+    background: bg4
     leftpic: Big1
     rightpic: 
     centerpic: 
@@ -500,6 +540,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u8C22\u8C22Choice1-7"
     name: "\u5C31\u80FD"
+    background: bg5
     leftpic: 
     rightpic: man1
     centerpic: Big2
@@ -512,6 +553,7 @@ MonoBehaviour:
     type: Jump
     content: 
     name: 
+    background: bg6
     leftpic: 
     rightpic: 
     centerpic: 
@@ -524,6 +566,7 @@ MonoBehaviour:
     type: Dialogue
     content: Jump1Success
     name: "\u540D\u5B57"
+    background: bg7
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -536,6 +579,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554AChoice1-2"
     name: "\u540D\u5B57"
+    background: bg8
     leftpic: man2
     rightpic: blue2
     centerpic: pink0
@@ -548,6 +592,7 @@ MonoBehaviour:
     type: Dialogue
     content: Jump2Success
     name: "\u5C31\u80FD"
+    background: bg9
     leftpic: 
     rightpic: 
     centerpic: blue1
@@ -560,6 +605,7 @@ MonoBehaviour:
     type: Dialogue
     content: "\u554A\u554A"
     name: "\u540D\u5B57"
+    background: bg10
     leftpic: man2
     rightpic: blue2
     centerpic: pink0

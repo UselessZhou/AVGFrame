@@ -25,6 +25,10 @@ public class Sheet1Data
   public string Name { get {return name; } set { name = value;} }
   
   [SerializeField]
+  string background;
+  public string Background { get {return background; } set { background = value;} }
+  
+  [SerializeField]
   string leftpic;
   public string Leftpic { get {return leftpic; } set { leftpic = value;} }
   

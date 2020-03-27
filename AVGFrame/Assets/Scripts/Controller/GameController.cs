@@ -14,7 +14,7 @@ public class GameController : MonoBehaviour
 {
     public static GameController _instance;
 
-    public Chapter chapter;
+    //public Chapter chapter;
     private static string rootPath; //根目录
     private static string savedDatasPath; //剧本目录
     private static string savedDatasFile; //剧本文件名

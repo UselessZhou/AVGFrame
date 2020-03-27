@@ -35,6 +35,10 @@ MonoBehaviour:
     isEnable: 0
     isArray: 0
   - type: 1
+    name: Background
+    isEnable: 0
+    isArray: 0
+  - type: 1
     name: leftPic
     isEnable: 0
     isArray: 0

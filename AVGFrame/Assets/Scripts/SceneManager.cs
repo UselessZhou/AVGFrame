@@ -1,43 +1,79 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class SceneManager : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject titleContainer;
-    [SerializeField]
-    private GameObject chapterContainer;
+    public static SceneManager instance;
 
-    public DialogueManager dialogManager;
+    [SerializeField]
+    private GameObject choicePanel;
+    public GameObject[] choiceBtns;
+
+    private void Awake()
+    {
+        instance = this;
+        
+    }
+    private void Start()
+    {
+    }
 
     public void ShowScene(AVGState state)
     {
         switch (state)
         {
             case AVGState.Title:
-                ShowTitleContainer(true);
+                TitleManager.instance.ShowTitle(true);
                 break;
             case AVGState.Chapter:
-                ShowChapterContainer(true);
+                TitleManager.instance.ShowTitle(false);
+                DialogueManager.instance.Init();
+                break;
+            case AVGState.Save:
+                SaveLoadManager.instance.Init();
+                break;
+            case AVGState.Load:
+                SaveLoadManager.instance.Init();
                 break;
             default:
                 break;
         }
     }
 
-    private void ShowTitleContainer(bool value)
+    //private void ShowTitleContainer(bool value)
+    //{
+    //    TitleManager.instance.ShowTitle(value);
+    //}
+
+    //private void ShowChapterContainer(bool value)
+    //{
+    //    if (titleContainer.activeSelf)
+    //    {
+    //        ShowTitleContainer(false);
+    //    }
+    //    chapterContainer.SetActive(value);
+    //    dialogManager.Init();
+    //}
+
+    public void ShowChoicePanel(bool value)
     {
-        titleContainer.SetActive(value);
+        choicePanel.SetActive(value);
     }
 
-    private void ShowChapterContainer(bool value)
+    public void SetChoicePanel(string choiceContent)
     {
-        if (titleContainer.activeSelf)
+        string[] choiceArray = choiceContent.Split('#');
+        for (int i = 0; i < choiceArray.Length; i++)
         {
-            ShowTitleContainer(false);
+            string[] tmpContent = choiceArray[i].Split('>');
+            choiceBtns[i].GetComponentInChildren<Text>().text = tmpContent[0];
+            choiceBtns[i].name = tmpContent[1];
         }
-        chapterContainer.SetActive(value);
-        dialogManager.Init();
     }
+
+    //public void ShowSaveLoadContainer(bool isShow)
+    //{
+    //    saveLoadContainer.SetActive(isShow);
+    //}
+
 }

@@ -569,3 +569,4 @@ E:\GitHub\AVGFrame\Temp\bin\Debug\DOTweenPro.dll
 E:\GitHub\AVGFrame\Temp\bin\Debug\DemiLib.xml
 E:\GitHub\AVGFrame\Temp\bin\Debug\DOTween.xml
 E:\GitHub\AVGFrame\Temp\bin\Debug\DOTweenPro.xml
+E:\GitHub\AVGFrame\Temp\bin\Debug\LitJson(1).dll

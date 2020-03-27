@@ -1,18 +1,40 @@
-﻿using System.Collections;
+﻿using LitJson;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class AVGController : MonoBehaviour
 {
-    public AVGState avgState;
+    public static AVGController instance;
 
-    public DialogueManager dialogManager;
-    public SceneManager sceneManager;
+    public AVGState avgState;
     
+    public SavedDatas savedDatas;
+    private int savedDatasNum;//可存档总数
+
+    private void Start()
+    {
+        instance = this;
+        savedDatasNum = 80;
+        InitList();
+        LoadData();
+
+        ShowTargetScene(AVGState.Title);
+    }
+
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            UserClicked();
+        }
+    }
+
     public void ShowTargetScene(AVGState tmpState)
     {
         avgState = tmpState;
-        sceneManager.ShowScene(avgState);
+        SceneManager.instance.ShowScene(avgState);
     }
 
     public void UserClicked()
@@ -20,7 +42,7 @@ public class AVGController : MonoBehaviour
         switch (avgState)
         {
             case AVGState.Chapter:
-                dialogManager.ShowNextLine();
+                DialogueManager.instance.ShowNextLine();
                 break;
             default:
                 break;
@@ -30,6 +52,40 @@ public class AVGController : MonoBehaviour
     public void ProcessChoiceBtnMsg(GameObject btn)
     {
         string btnName = btn.name;
-        dialogManager.JumpTargetDialogue(int.Parse(btnName));
+        DialogueManager.instance.JumpTargetDialogue(int.Parse(btnName));
+    }
+
+    public void SaveData(int num, Data data)
+    {
+        savedDatas.datas[num] = data;
+        string jsonString = JsonMapper.ToJson(savedDatas);
+        StreamWriter sw = new StreamWriter(Application.dataPath + "/SavedDatas.txt");
+        sw.Write(jsonString);
+        sw.Close();
+    }
+
+    private void LoadData()
+    {
+        if(File.Exists(Application.dataPath + "/SavedDatas.txt"))
+        {
+            StreamReader sr = new StreamReader(Application.dataPath + "/SavedDatas.txt");
+            string jsonString = sr.ReadToEnd();
+            sr.Close();
+            savedDatas = JsonMapper.ToObject<SavedDatas>(jsonString);
+        }
+        else
+        {
+            Debug.Log("NOT FOUND FILE");
+        }
+    }
+
+    private void InitList()
+    {
+        savedDatas = new SavedDatas();
+        savedDatas.datas = new List<Data>();
+        for (int i = 0; i < savedDatasNum; i++)
+        {
+            savedDatas.datas.Add(new Data());
+        }
     }
 }

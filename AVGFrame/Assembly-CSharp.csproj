@@ -60,8 +60,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Chapters\Runtime\Chapter.cs" />
-    <Compile Include="Assets\Chapters\Runtime\ChapterData.cs" />
     <Compile Include="Assets\Chapters\Runtime\Sheet1.cs" />
     <Compile Include="Assets\Chapters\Runtime\Sheet1Data.cs" />
     <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleAudio.cs" />
@@ -91,8 +89,11 @@
     <Compile Include="Assets\Scripts\Model\SavedDataModel.cs" />
     <Compile Include="Assets\Scripts\Model\SettingModel.cs" />
     <Compile Include="Assets\Scripts\PlayerController.cs" />
+    <Compile Include="Assets\Scripts\SavedDatas.cs" />
+    <Compile Include="Assets\Scripts\SaveLoadManager.cs" />
     <Compile Include="Assets\Scripts\SceneManager.cs" />
     <Compile Include="Assets\Scripts\TestDemo.cs" />
+    <Compile Include="Assets\Scripts\TitleManager.cs" />
     <None Include="Assets\Demigiant\DOTweenPro\readme.txt" />
     <None Include="Assets\QuickSheet\GDataPlugin\Templates\DataClass.txt" />
     <None Include="Assets\QuickSheet\GDataPlugin\Templates\ScriptableObjectEditorClass.txt" />
@@ -102,6 +103,7 @@
     <None Include="Assets\QuickSheet\ExcelPlugin\Templates\PostProcessor.txt" />
     <None Include="Assets\QuickSheet\ExcelPlugin\Templates\ScriptableObjectClass.txt" />
     <None Include="Assets\QuickSheet\ExcelPlugin\Templates\ScriptableObjectEditorClass.txt" />
+    <None Include="Assets\SavedDatas.txt" />
     <None Include="Assets\Demigiant\DemiLib\Core\DemiLib.xml" />
     <None Include="Assets\QuickSheet\GDataPlugin\Templates\ScriptableObjectClass.txt" />
     <None Include="Assets\QuickSheet\GDataPlugin\Templates\AssetFileClass.txt" />
@@ -331,6 +333,9 @@
     </Reference>
     <Reference Include="DOTweenPro">
       <HintPath>E:/GitHub/AVGFrame/Assets/Demigiant/DOTweenPro/DOTweenPro.dll</HintPath>
+    </Reference>
+    <Reference Include="LitJson(1)">
+      <HintPath>E:/GitHub/AVGFrame/Assets/Plugins/LitJson(1).dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.Editor">
       <HintPath>E:/GitHub/AVGFrame/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Editor.dll</HintPath>

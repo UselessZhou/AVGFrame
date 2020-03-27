@@ -5,9 +5,10 @@ using DG.Tweening;
 
 public class DialogueManager : MonoBehaviour
 {
+    public static DialogueManager instance;
     [SerializeField]
     private DialogueState dialogState;
-
+    public SceneManager sceneManager;
     public GameObject chapterContainer;
     public Sheet1[] chapterDatas;
     private Sheet1 curChapterData; //这个是QucikSheet解析的Excel数据
@@ -15,22 +16,20 @@ public class DialogueManager : MonoBehaviour
     [Range(0.01f,0.08f)]
     public float typingSpeed = 0.05f;
     
-    [SerializeField]
-    private int curNum;
-    private int chapterIndex;
+    public int curNum;
+    public int chapterIndex;
+    public string curDialogContent;
+    public string curBGPic;
 
     [Header("Roles")]
     public GameObject leftRole;
     public GameObject rightRole;
     public GameObject centerRole;
 
-    [Header("ChoicePanel")]
-    public GameObject choicePanel;
-    public GameObject[] choiceBtns;
-
     private GameObject leftRolePic;
     private GameObject rightRolePic;
     private GameObject centerRolePic;
+    private GameObject bgPic;
 
     private Text roleName;
     private Text dialogueContent;
@@ -38,6 +37,9 @@ public class DialogueManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        instance = this;
+        curNum = 0;
+        chapterIndex = 0;
         dialogState = DialogueState.START;
 
         GameObject lineContainer = chapterContainer.transform.Find("LineContainer").gameObject;
@@ -48,6 +50,8 @@ public class DialogueManager : MonoBehaviour
         leftRolePic = leftRole.transform.Find("LeftRolePic").gameObject;
         rightRolePic = rightRole.transform.Find("RightRolePic").gameObject;
         centerRolePic = centerRole.transform.Find("CenterRolePic").gameObject;
+        bgPic = chapterContainer.transform.Find("Background").gameObject.transform.Find("bg").gameObject;
+
     }
 
     // Update is called once per frame
@@ -68,12 +72,11 @@ public class DialogueManager : MonoBehaviour
 
     public void Init()
     {
-        curNum = 0;
-        chapterIndex = 0;
         LoadChapter();
-        ShowRoles();
-        ShowContent();
-        //NextLine();
+        SetBGPic();
+        SetRoles();
+        SetContent();
+        chapterContainer.SetActive(true);
     }
 
     private void LoadChapter()
@@ -81,14 +84,22 @@ public class DialogueManager : MonoBehaviour
         curChapterData = chapterDatas[chapterIndex];
     }
 
-    private void ShowContent()
+    private void SetContent()
     {
         dialogState = DialogueState.TYPING;
         roleName.text = curChapterData.dataList[curNum].Name;
+        curDialogContent = curChapterData.dataList[curNum].Content;
         StartContentCoroutine(true);
     }
 
-    private void ShowRoles()
+    private void SetBGPic()
+    {
+        curBGPic = curChapterData.dataList[curNum].Background;
+        bgPic.GetComponent<Image>().sprite = Resources.Load<Sprite>("Image/ChapterBG/" + curBGPic);
+    }
+
+
+    private void SetRoles()
     {
         if (curChapterData.dataList[curNum].Showleft)
         {
@@ -120,43 +131,13 @@ public class DialogueManager : MonoBehaviour
             centerRole.SetActive(false);
         }
     }
-
-    //private void CheckTypingFinished()
-    //{
-    //    if(dialogState == DialogueState.TYPING)
-    //    {
-    //        dialogState = DialogueState.PAUSED;
-
-    //    }
-    //}
-
-    private void ShowChoicePanel(bool value)
-    {
-        dialogState = DialogueState.CHOICE;
-        if (value)
-        {
-            choicePanel.SetActive(true);
-            var choiceContent = curChapterData.dataList[curNum].Choicecontent;
-            string[] choiceArray = choiceContent.Split('#');
-            for (int i = 0; i < choiceArray.Length; i++)
-            {
-                string[] tmpContent = choiceArray[i].Split('>');
-                choiceBtns[i].GetComponentInChildren<Text>().text = tmpContent[0];
-                choiceBtns[i].name = tmpContent[1];
-            }
-        }
-        else
-        {
-            choicePanel.SetActive(false);
-        }
-
-    }
+    
 
     public void JumpTargetDialogue(int targetId)
     {
         Sheet1Data tmpData = curChapterData.dataList.Find((Sheet1Data data) => data.Index == targetId);
         curNum = tmpData.Index - 1;
-        ShowChoicePanel(false);
+        sceneManager.ShowChoicePanel(false);
         dialogState = DialogueState.PAUSED;
         ShowNextLine();
     }
@@ -183,11 +164,14 @@ public class DialogueManager : MonoBehaviour
                 switch (tempType)
                 {
                     case "Dialogue":
-                        ShowRoles();
-                        ShowContent();
+                        SetBGPic();
+                        SetRoles();
+                        SetContent();
                         break;
                     case "Choice":
-                        ShowChoicePanel(true);
+                        dialogState = DialogueState.CHOICE;
+                        sceneManager.SetChoicePanel(curChapterData.dataList[curNum].Choicecontent);
+                        sceneManager.ShowChoicePanel(true);
                         break;
                     case "Jump":
                         JumpTargetDialogue(curChapterData.dataArray[curNum].Targetindex);
