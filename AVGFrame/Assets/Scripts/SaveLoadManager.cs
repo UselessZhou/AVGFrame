@@ -28,13 +28,21 @@ public class SaveLoadManager : MonoBehaviour
     {
         curPage = 0;
         firstPageBtn.Select();
-        ShowSaveLoadContainer(true);
+        //ShowSaveLoadContainer(true);
+        saveLoadContainer.SetActive(true);
         ShowSavedDatas(0, AVGController.instance.savedDatas);
     }
 
     public void ShowSaveLoadContainer(bool value)
     {
-        saveLoadContainer.SetActive(value);
+        if (value)
+        {
+            Init();
+        }
+        else
+        {
+            saveLoadContainer.SetActive(value);
+        }
     }
 
     public void RefreshSavedData(int index, Data data)
@@ -68,14 +76,10 @@ public class SaveLoadManager : MonoBehaviour
     public void OnClick(int num)
     {
         Data tmpData = new Data();
-        if(AVGController.instance.avgState == AVGState.Save)
+        if (AVGController.instance.avgState == AVGState.Save)
         {
+            tmpData = DialogueManager.instance.ReturnCurrentData();
             int index = curPage * 8 + num;
-            tmpData.chapterIndex = DialogueManager.instance.chapterIndex;
-            tmpData.lineIndex = DialogueManager.instance.curNum - 1;
-            tmpData.bgPic = DialogueManager.instance.curBGPic;
-            tmpData.dialogContent = DialogueManager.instance.curDialogContent;
-            tmpData.dateTime = DateTime.Now;
             AVGController.instance.SaveData(index, tmpData);
             RefreshSavedData(index, tmpData);
         }
@@ -86,7 +90,7 @@ public class SaveLoadManager : MonoBehaviour
             DialogueManager.instance.curNum = tmpData.lineIndex;
             ShowSaveLoadContainer(false);
             AVGController.instance.avgState = AVGState.Chapter;
-            AVGController.instance.ShowTargetScene(AVGState.Chapter);
+            AVGController.instance.ShowTargeScene((int)AVGState.Chapter);
         }
     }
 

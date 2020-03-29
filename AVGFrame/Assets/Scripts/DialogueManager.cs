@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using System;
 
 public class DialogueManager : MonoBehaviour
 {
@@ -15,7 +16,7 @@ public class DialogueManager : MonoBehaviour
 
     [Range(0.01f,0.08f)]
     public float typingSpeed = 0.05f;
-    
+    private float autoPlaySpeed = 0.6f;
     public int curNum;
     public int chapterIndex;
     public string curDialogContent;
@@ -33,6 +34,10 @@ public class DialogueManager : MonoBehaviour
 
     private Text roleName;
     private Text dialogueContent;
+
+    private GameObject topMenu;
+    private bool isTopMenu;
+    private bool isAutoPlay;
 
     // Start is called before the first frame update
     void Start()
@@ -52,9 +57,16 @@ public class DialogueManager : MonoBehaviour
         centerRolePic = centerRole.transform.Find("CenterRolePic").gameObject;
         bgPic = chapterContainer.transform.Find("Background").gameObject.transform.Find("bg").gameObject;
 
+        topMenu = chapterContainer.transform.Find("TopMenu").gameObject;
+
     }
 
-    // Update is called once per frame
+    private void FixedUpdate()
+    {
+        ShowTopMenu();
+        
+    }
+
     void Update()
     {
         switch (dialogState)
@@ -68,15 +80,34 @@ public class DialogueManager : MonoBehaviour
             default:
                 break;
         }
+
+        if (isAutoPlay)
+        {
+            AutoPlay();
+        }
     }
 
     public void Init()
     {
+        AVGController.instance.avgState = AVGState.Chapter;
+        isTopMenu = false;
         LoadChapter();
         SetBGPic();
         SetRoles();
         SetContent();
         chapterContainer.SetActive(true);
+    }
+
+    public void ShowChapterContainer(bool value)
+    {
+        if (value)
+        {
+            Init();
+        }
+        else
+        {
+            chapterContainer.SetActive(value);
+        }
     }
 
     private void LoadChapter()
@@ -146,6 +177,10 @@ public class DialogueManager : MonoBehaviour
     //这样会产生问题：协程期间再点击，本应该只停协程，由于之前调用了NextLine，协程停止后显示的将是下一句话。
     public void ShowNextLine()
     {
+        //if (isTopMenu)//topMenu显示时，点击事件无效,虽然用了RaycastTarget来控制点击，但top的Image与鼠标的位置还存在一定的偏移。
+        //{
+        //    return;
+        //}
         if(dialogState == DialogueState.TYPING)
         {
             StartContentCoroutine(false);
@@ -197,9 +232,13 @@ public class DialogueManager : MonoBehaviour
             dialogueContent.text = tempText;
             yield return new WaitForSeconds(typingSpeed);
         }
+        if (isAutoPlay)
+        {
+            yield return new WaitForSeconds(autoPlaySpeed);
+        }
         //协程被Stop时，这些语句不会执行
         dialogState = DialogueState.PAUSED;
-        NextLine();
+        //NextLine();
     }
 
     private void StartContentCoroutine(bool value)
@@ -213,12 +252,77 @@ public class DialogueManager : MonoBehaviour
             StopCoroutine("ContentCoroutine");
             dialogueContent.text = curChapterData.dataList[curNum].Content;
             dialogState = DialogueState.PAUSED;
-            NextLine();
+            //NextLine();
         }
     }
 
-    private void NextLine()
+    public void NextLine()
     {
         curNum++;
+    }
+
+    private void ShowTopMenu()
+    {
+        if(AVGController.instance.avgState == AVGState.Chapter)
+        {
+            //Debug.Log("Input.mousePosition.y: " + Input.mousePosition.y + "; Screen.height" + Screen.height + "; topMenu.GetComponent<RectTransform>().position.y: " + topMenu.GetComponent<RectTransform>().rect.height);
+            //最后"-8"是因为直接用height，在game里鼠标与top的图片还有一定距离就能认为在范围内了，很奇怪！
+            if (Input.mousePosition.y > Screen.height - Mathf.Abs(topMenu.GetComponent<RectTransform>().rect.height - 8))
+            {
+                topMenu.SetActive(true);
+                isTopMenu = true;
+            }
+            else
+            {
+                topMenu.SetActive(false);
+                isTopMenu = false;
+            }
+        }
+    }
+
+    public DialogueState ReturnDialogState()
+    {
+        return dialogState;
+    }
+
+    public void SetAutoPlay()
+    {
+        isAutoPlay = !isAutoPlay;
+    }
+
+    private void AutoPlay()
+    {
+        if (dialogState == DialogueState.PAUSED)
+        {
+            NextLine();
+            ShowNextLine();
+        }
+    }
+
+    public Data ReturnCurrentData()
+    {
+        Data tmpData = new Data();
+        tmpData.chapterIndex = chapterIndex;
+        tmpData.lineIndex = curNum - 1;
+        tmpData.bgPic = curBGPic;
+        tmpData.dialogContent = curDialogContent;
+        tmpData.dateTime = DateTime.Now;
+        return tmpData;
+    }
+
+    public void QuickSave()
+    {
+        AVGController.instance.SaveData(-1, ReturnCurrentData());
+    }
+
+    public void QucikLoad()
+    {
+        if (AVGController.instance.savedDatas.quickData.dateTime != DateTime.MinValue)
+        {
+            StartContentCoroutine(false);
+            chapterIndex = AVGController.instance.savedDatas.quickData.chapterIndex;
+            curNum = AVGController.instance.savedDatas.quickData.lineIndex;
+            Init();
+        }
     }
 }

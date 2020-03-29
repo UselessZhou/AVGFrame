@@ -19,17 +19,17 @@ public class PlayerController : MonoBehaviour
         //}
     }
 
-    public void GoChapter()
-    {
-        AVGController.instance.ShowTargetScene(AVGState.Chapter);
-    }
+    //public void GoChapter()
+    //{
+    //    AVGController.instance.ShowTargetScene(AVGState.Chapter);
+    //}
 
-    public void GoSave()
-    {
-        AVGController.instance.ShowTargetScene(AVGState.Save);
-    }
-    public void GoLoad()
-    {
-        AVGController.instance.ShowTargetScene(AVGState.Load);
-    }
+    //public void GoSave()
+    //{
+    //    AVGController.instance.ShowTargetScene(AVGState.Save);
+    //}
+    //public void GoLoad()
+    //{
+    //    AVGController.instance.ShowTargetScene(AVGState.Load);
+    //}
 }

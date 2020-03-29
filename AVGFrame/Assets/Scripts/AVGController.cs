@@ -3,38 +3,53 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class AVGController : MonoBehaviour
 {
     public static AVGController instance;
 
     public AVGState avgState;
-    
+
     public SavedDatas savedDatas;
     private int savedDatasNum;//可存档总数
+    private List<int> sceneList;
 
     private void Start()
     {
         instance = this;
         savedDatasNum = 80;
+        sceneList = new List<int>();
         InitList();
         LoadData();
-
-        ShowTargetScene(AVGState.Title);
+        SetActiveScene((int)AVGState.Title);
+        //ShowTargeScene((int)AVGState.Title);
     }
 
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            UserClicked();
+            //将不需要交互的GameObject的Raycast Target设为false，即可区分按钮与页面的点击事件。
+            if (!EventSystem.current.IsPointerOverGameObject())
+            {
+                UserClicked();
+            }
+            else
+            {
+                Debug.Log("Mouse is point over GameObject!");
+            }
         }
     }
-
-    public void ShowTargetScene(AVGState tmpState)
+    private void Init()
     {
-        avgState = tmpState;
-        SceneManager.instance.ShowScene(avgState);
+    }
+    public void ShowTargeScene(int num)
+    {
+        avgState = (AVGState)num;
+        SceneManager.instance.ShowScene(GetLastScene(), false);
+        SetActiveScene(num);
+        SceneManager.instance.ShowScene(avgState, true);
     }
 
     public void UserClicked()
@@ -42,6 +57,10 @@ public class AVGController : MonoBehaviour
         switch (avgState)
         {
             case AVGState.Chapter:
+                if(DialogueManager.instance.ReturnDialogState() == DialogueState.PAUSED)
+                {
+                    DialogueManager.instance.NextLine();
+                }
                 DialogueManager.instance.ShowNextLine();
                 break;
             default:
@@ -57,7 +76,14 @@ public class AVGController : MonoBehaviour
 
     public void SaveData(int num, Data data)
     {
-        savedDatas.datas[num] = data;
+        if(num == -1)//QuickData
+        {
+            savedDatas.quickData = data;
+        }
+        else
+        {
+            savedDatas.datas[num] = data;
+        }
         string jsonString = JsonMapper.ToJson(savedDatas);
         StreamWriter sw = new StreamWriter(Application.dataPath + "/SavedDatas.txt");
         sw.Write(jsonString);
@@ -87,5 +113,35 @@ public class AVGController : MonoBehaviour
         {
             savedDatas.datas.Add(new Data());
         }
+    }
+
+    public void ExitBtn(int sceneNum)
+    {
+        SceneManager.instance.ShowScene((AVGState)sceneNum, false);
+        RemoveHistoryScene();
+        SceneManager.instance.ShowScene(GetLastScene(), true);
+        Debug.Log("GetActiveScene: " + sceneList);
+    }
+
+    public void SetActiveScene(int num)
+    {
+        if(num == (int)AVGState.Title)
+        {
+            sceneList.Clear();
+        }
+        sceneList.Add(num);
+        Debug.Log("SetActiveScene: " + sceneList);
+    }
+
+    public void RemoveHistoryScene()
+    {
+        int num = sceneList.Count;
+        sceneList.RemoveAt(num - 1);
+    }
+
+    public AVGState GetLastScene()
+    {
+        int num = sceneList.Count;
+        return (AVGState)sceneList[num - 1];
     }
 }

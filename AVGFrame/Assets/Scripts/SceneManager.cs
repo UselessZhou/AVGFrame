@@ -17,43 +17,28 @@ public class SceneManager : MonoBehaviour
     private void Start()
     {
     }
+    
 
-    public void ShowScene(AVGState state)
+    public void ShowScene(AVGState state, bool value)
     {
         switch (state)
         {
             case AVGState.Title:
-                TitleManager.instance.ShowTitle(true);
+                TitleManager.instance.ShowTitleContainer(value);
                 break;
             case AVGState.Chapter:
-                TitleManager.instance.ShowTitle(false);
-                DialogueManager.instance.Init();
+                DialogueManager.instance.ShowChapterContainer(value);
                 break;
             case AVGState.Save:
-                SaveLoadManager.instance.Init();
+                SaveLoadManager.instance.ShowSaveLoadContainer(value);
                 break;
             case AVGState.Load:
-                SaveLoadManager.instance.Init();
+                SaveLoadManager.instance.ShowSaveLoadContainer(value);
                 break;
             default:
                 break;
         }
     }
-
-    //private void ShowTitleContainer(bool value)
-    //{
-    //    TitleManager.instance.ShowTitle(value);
-    //}
-
-    //private void ShowChapterContainer(bool value)
-    //{
-    //    if (titleContainer.activeSelf)
-    //    {
-    //        ShowTitleContainer(false);
-    //    }
-    //    chapterContainer.SetActive(value);
-    //    dialogManager.Init();
-    //}
 
     public void ShowChoicePanel(bool value)
     {
@@ -70,10 +55,5 @@ public class SceneManager : MonoBehaviour
             choiceBtns[i].name = tmpContent[1];
         }
     }
-
-    //public void ShowSaveLoadContainer(bool isShow)
-    //{
-    //    saveLoadContainer.SetActive(isShow);
-    //}
 
 }

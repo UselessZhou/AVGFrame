@@ -5,6 +5,7 @@ using UnityEngine;
 public class SavedDatas:ScriptableObject
 {
     public List<Data> datas;
+    public Data quickData;
 }
 
 public class Data

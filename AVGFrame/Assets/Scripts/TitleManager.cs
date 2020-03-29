@@ -15,11 +15,24 @@ public class TitleManager : MonoBehaviour
     }
     void Start()
     {
+
+    }
+
+    public void Init()
+    {
+        titleContainer.SetActive(true);
     }
     
-    public void ShowTitle(bool value)
+    public void ShowTitleContainer(bool value)
     {
-        titleContainer.SetActive(value);
+        if (value)
+        {
+            Init();
+        }
+        else
+        {
+            titleContainer.SetActive(value);
+        }
     }
 
 }

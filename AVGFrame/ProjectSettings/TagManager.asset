@@ -14,8 +14,8 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
+  - Title
+  - Chapter
   - 
   - 
   - 
@@ -41,4 +41,19 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Title
+    uniqueID: 1817623759
+    locked: 0
+  - name: Chapter
+    uniqueID: 760514685
+    locked: 0
+  - name: SaveLoad
+    uniqueID: 4218389521
+    locked: 0
+  - name: CG
+    uniqueID: 486396315
+    locked: 0
+  - name: Setting
+    uniqueID: 4271303651
     locked: 0
